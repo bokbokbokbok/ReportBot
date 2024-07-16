@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
 using McgTgBotNet.Models;
 using Telegram.Bot.Types;
 using System.Data.Entity.Migrations;

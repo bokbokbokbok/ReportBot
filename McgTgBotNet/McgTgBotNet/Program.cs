@@ -1,21 +1,13 @@
-﻿using McgTgBot.DB;
-using McgTgBotNet.Services;
+﻿using McgTgBotNet.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Telegram.Bot;
-using Telegram.Bot.Args;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace McgTgBotNet
 {
@@ -25,12 +17,14 @@ namespace McgTgBotNet
         private static string[] svins = new string[] { "Managers" };
         private static bool isSvin(string svin) => svins.Contains(svin);
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            var token = "6976626679:AAGbQaOPbuAcpAyRBlVUR5PGS5nnh6ChnDQ";
+            var token = "7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214";
 
             client = new TelegramBotClient(token);
+
+            await SessionIsFinished(717057925);
 
             CancellationTokenSource cts = new CancellationTokenSource();
             ReceiverOptions receiverOptions = new ReceiverOptions()
@@ -41,12 +35,14 @@ namespace McgTgBotNet
             Console.WriteLine(
               $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
             );
+
             client.StartReceiving(
                 updateHandler: BotOnMessageReceived,
                 pollingErrorHandler: HandlePollingErrorAsync,
                 receiverOptions: receiverOptions,
                 cancellationToken: cts.Token
             );
+
 
             //client.StartReceiving();
             //while(true){}
@@ -95,6 +91,25 @@ namespace McgTgBotNet
             var processor = new MessageProcess(client);
 
             processor.ProcessMessage(update);
+        }
+
+        private static async Task SessionIsFinished(long chatId)
+        {
+            WorksnapsService worksnapsService = new WorksnapsService("mEJbcCmiAMBc95Fsf3FaOO22ElEdc1YJ78vkK4z7");
+            await worksnapsService.AddProject();
+            var userFinished = await worksnapsService.GetTimeEntryAsync();
+
+            foreach (var item in userFinished)
+            {
+                if(item.Value)
+                {
+                    await client.SendTextMessageAsync(chatId, $"Пользователь {item.Key} завершил сессию");
+                }
+                else
+                {
+                    await client.SendTextMessageAsync(chatId, $"Пользователь {item.Key} не завершил сессию");
+                }
+            }
         }
     }
 }
