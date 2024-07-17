@@ -58,6 +58,16 @@ namespace McgTgBot.DB
             return user;
         }
 
+        public static McgTgBotNet.DB.Entities.User GetUserByWorksnapsId(int worksnapsId)
+        {
+            McgTgBotNet.DB.Entities.User item;
+            using (var db = new McgBotContext())
+            {
+                item = db.Users.FirstOrDefault(p => p.WorksnapsId == worksnapsId);
+            }
+
+            return item;
+        }
 
         public static List<Report> GetReports(DateTime from, DateTime to)
         {

@@ -46,7 +46,7 @@ namespace McgTgBotNet.Services
 
             foreach (var item in data)
             {
-                if (item.DurationInMinutes > 30)
+                if (item.DurationInMinutes > 180)
                 {
                     usersIsFinished.Add(item.UserId, true);
                 }

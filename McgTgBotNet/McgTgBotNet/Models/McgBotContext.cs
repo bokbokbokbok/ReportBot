@@ -1,21 +1,15 @@
-using System;
-using System.CodeDom;
-using System.ComponentModel.DataAnnotations.Schema;
+using McgTgBotNet.DB.Entities;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
-using System.Linq;
-using System.Xml;
-using Telegram.Bot.Types;
 
 namespace McgTgBotNet.Models
 {
     public partial class McgBotContext : DbContext
     {
-        public McgBotContext()
-            : base("name=ReportBotDb")
-        {
-        }
+        public McgBotContext() : base("name=ReportBotDb") { }
         
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Project> Projects { get; set; }
         public virtual DbSet<Report> Report { get; set; }
         public virtual DbSet<ReportUser> ReportUser { get; set; }
 
