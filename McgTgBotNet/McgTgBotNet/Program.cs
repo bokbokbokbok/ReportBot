@@ -101,7 +101,7 @@ namespace McgTgBotNet
         {
             var processor = new MessageProcess(client);
 
-            processor.ProcessMessage(update);
+            await processor.ProcessMessageAsync(update);
         }
     }
 }

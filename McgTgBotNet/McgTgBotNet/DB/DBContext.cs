@@ -29,6 +29,33 @@ namespace McgTgBot.DB
             return true;
         }
 
+        public static McgTgBotNet.DB.Entities.User AddUser (McgTgBotNet.DB.Entities.User user)
+        {
+            using (var db = new McgBotContext())
+            {
+                if(db.Users.FirstOrDefault(p => p.WorksnapsId == user.WorksnapsId) == null)
+                {
+                    db.Users.Add(user);
+                    db.SaveChanges();
+                }
+            }
+
+            return user;
+        }
+
+        public static bool UpdateUserShiftTime(long chatId, int shiftTime)
+        {
+            using (var db = new McgBotContext())
+            {
+                var user = db.Users.FirstOrDefault(p => p.ChatId == chatId);
+                user.ShiftTime = shiftTime;
+                db.Users.AddOrUpdate(user);
+                db.SaveChanges();
+            }
+
+            return true;
+        }
+
         public static ReportUser CreateUser(Message message, string customName = "")
         {
             ReportUser user = new ReportUser

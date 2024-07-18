@@ -19,7 +19,7 @@ namespace McgTgBotNet.Services
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(token)));
         }
 
-        public async Task<Dictionary<int, bool>> GetTimeEntryAsync()
+        public async Task<Dictionary<int, bool>> GetSummaryReportsAsync()
         {
             var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
 
@@ -46,7 +46,12 @@ namespace McgTgBotNet.Services
 
             foreach (var item in data)
             {
-                if (item.DurationInMinutes > 180)
+                var user = DBContext.GetUserByWorksnapsId(item.UserId);
+
+                if (user == null)
+                    continue;
+
+                if (item.DurationInMinutes >= user.ShiftTime)
                 {
                     usersIsFinished.Add(item.UserId, true);
                 }
@@ -77,6 +82,28 @@ namespace McgTgBotNet.Services
             }
 
             return true;
+        }
+
+        public async Task<int> GetUserId(string email)
+        {
+            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users.xml");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+
+            var doc = XDocument.Parse(content);
+
+            var data = new List<UserDTO>();
+
+            foreach (var element in doc.Root.Elements())
+            {
+                var item = element.ParseXML<UserDTO>();
+
+                data.Add(item);
+            }
+
+            var user = data.FirstOrDefault(x => x.Email == email);
+
+            return user.Id;
         }
     }
 }

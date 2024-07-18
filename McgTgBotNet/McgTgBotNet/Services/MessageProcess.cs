@@ -2,10 +2,12 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -15,13 +17,15 @@ namespace McgTgBotNet.Services
     public class MessageProcess
     {
         TelegramBotClient client;
+        private readonly WorksnapsService _worksnapsService;
 
         public MessageProcess(TelegramBotClient _client)
         {
             client = _client;
+            _worksnapsService = new WorksnapsService("mEJbcCmiAMBc95Fsf3FaOO22ElEdc1YJ78vkK4z7");
         }
 
-        public bool ProcessMessage(Update update)
+        public async Task<bool> ProcessMessageAsync(Update update)
         {
             try
             {
@@ -29,7 +33,7 @@ namespace McgTgBotNet.Services
                 // Only process Message updates: https://core.telegram.org/bots/api#message
                 if (update.Message != null && update.Message.Text != null)
                 {
-                    ProcessText(update);
+                    await ProcessTextAsync(update);
                 }
 
                 if (update.CallbackQuery != null)
@@ -38,7 +42,7 @@ namespace McgTgBotNet.Services
             catch (Exception ex)
             {
                 if (update.Message != null)
-                    client.SendTextMessageAsync(update.Message.Chat.Id, ex.Message);
+                    await client.SendTextMessageAsync(update.Message.Chat.Id, ex.Message);
             }
             return true;
         }
@@ -48,9 +52,69 @@ namespace McgTgBotNet.Services
 
         }
 
-        public void ProcessText(Update update)
+        public async Task ProcessTextAsync(Update update)
         {
             var message = update.Message;
+
+            if (message.Text.ToLower().Contains("start"))
+            {
+                var sent = client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n/shiftTime: 120\r\n\r\nThank you!"
+                    );
+            }
+
+            if (message.Text.ToLower().Contains("/email") && message.Text.ToLower().Contains("/shifttime"))
+            {
+                string pattern = @"/email:\s*(?<email>[^ \r\n]+)\s*/shiftTime:\s*(?<shiftTime>\d+)";
+
+                Match match = Regex.Match(message.Text, pattern, RegexOptions.IgnoreCase);
+
+                var id = await _worksnapsService.GetUserId(match.Groups["email"].Value);
+                int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
+                var user = new DB.Entities.User
+                {
+                    ChatId = message.Chat.Id,
+                    WorksnapsId = id,
+                    Username = message.From.Username,
+                    FirstName = message.From.FirstName,
+                    LastName = message.From.LastName,
+                    ShiftTime = shiftTime
+                };
+
+                DBContext.AddUser(user);
+                var buttons = new KeyboardButton[][]
+                {
+                    new KeyboardButton[] { "Select menu" },
+                    new KeyboardButton[] { "Update shift time"}, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
+                };
+
+                var sent = client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    "🎉 Thank you for registering! 🎉\n\nWe're excited to have you on board. If you have any questions, feel free to reach out!",
+                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true }
+                    );
+            }
+
+            if (message.Text.ToLower().Contains("update shift time"))
+            {
+                var sent = client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    "Please enter your new shift time in minutes.\n\nExample:\n/shiftTime: 120"
+                    );
+            }
+
+            if (message.Text.ToLower().Contains("/shifttime"))
+            {
+                var shiftTime = int.Parse(Regex.Match(message.Text, @"\d+").Value);
+
+                DBContext.UpdateUser(message.Chat.Id, shiftTime);
+
+                var sent = client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    "Thank you for updating shift time"
+                    );
+            }
 
             if (message.Text.ToLower().Contains("select menu"))
             {
@@ -78,7 +142,7 @@ namespace McgTgBotNet.Services
                 var buttons = new KeyboardButton[][]
                 {
                     new KeyboardButton[] { "Select menu" },
-                    new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
+                    new KeyboardButton[] { "Update shift time"}, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
                 };
 
                 var sent = client.SendTextMessageAsync(message.Chat.Id, "Choose a response",
@@ -142,7 +206,7 @@ namespace McgTgBotNet.Services
                     {
                         reportUser = DBContext.CreateUser(message, nickname);
 
-                        client.SendTextMessageAsync(message.Chat.Id, "Hello " +reportUser.UserName+ "! Nice to meet you.");
+                        await client.SendTextMessageAsync(message.Chat.Id, "Hello " + reportUser.UserName + "! Nice to meet you.");
                     }
                     else if (reportUser.UserName != nickname)
                     {
@@ -150,14 +214,13 @@ namespace McgTgBotNet.Services
                         reportUser.UserName = nickname;
                         DBContext.UpdateUser(reportUser);
 
-                        client.SendTextMessageAsync(message.Chat.Id, "What a nice new name you got here! Changed " + oldName + " for " + reportUser.UserName);
+                        await client.SendTextMessageAsync(message.Chat.Id, "What a nice new name you got here! Changed " + oldName + " for " + reportUser.UserName);
                     }
                 }
 
-
                 DBContext.CreateReport(message);
 
-                client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report");
+                await client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report");
             }
 
         }
