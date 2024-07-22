@@ -14,5 +14,7 @@ namespace McgTgBotNet.DTOs
         public string LastName { get; set; }
         [XMLProperty("email")]
         public string Email { get; set; }
+        [XMLProperty("api_token")]
+        public string ApiToken { get; set; }
     }
 }

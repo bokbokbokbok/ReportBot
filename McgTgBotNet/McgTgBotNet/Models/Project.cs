@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using McgTgBotNet.DB.Entities;
+using System.Collections.Generic;
 
 namespace McgTgBotNet.Models
 {
@@ -8,6 +9,8 @@ namespace McgTgBotNet.Models
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+
         public List<Report> Reports { get; set; }
+        public List<User> Users { get; set; } = new List<User>();
     }
 }

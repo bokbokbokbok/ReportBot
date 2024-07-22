@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using McgTgBotNet.Models;
 using Telegram.Bot.Types;
 using System.Data.Entity.Migrations;
+using Microsoft.EntityFrameworkCore;
 
 namespace McgTgBot.DB
 {
@@ -33,11 +34,13 @@ namespace McgTgBot.DB
         {
             using (var db = new McgBotContext())
             {
-                if(db.Users.FirstOrDefault(p => p.WorksnapsId == user.WorksnapsId) == null)
-                {
-                    db.Users.Add(user);
-                    db.SaveChanges();
-                }
+                var entity = db.Users.FirstOrDefault(p => p.WorksnapsId == user.WorksnapsId);
+
+                if(entity != null)
+                    throw new Exception($"👋 Hi {user.Username}, you are already registered");
+
+                db.Users.Add(user);
+                db.SaveChanges();
             }
 
             return user;
@@ -108,6 +111,18 @@ namespace McgTgBot.DB
             return list;
         }
 
+        public static McgTgBotNet.DB.Entities.User GetUserWithProject(int worksnapsId)
+        {
+            McgTgBotNet.DB.Entities.User item;
+            using (var db = new McgBotContext())
+            {
+                item = db.Users.FirstOrDefault(p => p.WorksnapsId == worksnapsId);
+                item.Projects = db.Projects.Where(p => p.Users.Any(x => x.Id == item.Id)).ToList();
+            }
+
+            return item;
+        }
+
         public static List<ReportUser> GetReportsUsers()
         {
             var list = new List<ReportUser>();
@@ -129,6 +144,59 @@ namespace McgTgBot.DB
             }
 
             return item;
+        }
+
+        public static Project InsertProject(Project project)
+        {
+            using (var db = new McgBotContext())
+            {
+                db.Projects.Add(project);
+                db.SaveChanges();
+            }
+
+            return project;
+        }
+
+        public static List<Project> InsertProjectMany(List<Project> projects)
+        {
+            using (var db = new McgBotContext())
+            {
+                foreach (var project in projects)
+                {
+                    if (db.Projects.FirstOrDefault(x => x.Name == project.Name) == null)
+                    {
+                        db.Projects.Add(project);
+                    }
+                }
+                db.SaveChanges();
+            }
+
+            return projects;
+        }
+
+        public static bool AddUserToProjects(int userId, List<string> projectNames)
+        {
+            using (var db = new McgBotContext())
+            {
+                var user = db.Users.FirstOrDefault(p => p.WorksnapsId == userId);
+                var projects = new List<Project>();
+
+                foreach (var projectName in projectNames)
+                {
+                    var project = db.Projects.FirstOrDefault(p => p.Name == projectName);
+                    if (project != null)
+                        projects.Add(project);
+                }
+
+                if (user == null)
+                    return false;
+
+                user.Projects.AddRange(projects);
+                db.Users.AddOrUpdate(user);
+                db.SaveChanges();
+            }
+
+            return true;
         }
     }
 }

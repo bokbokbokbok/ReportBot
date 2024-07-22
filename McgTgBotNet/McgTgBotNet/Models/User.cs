@@ -15,6 +15,7 @@ namespace McgTgBotNet.DB.Entities
         public string LastName { get; set; } = string.Empty;
         public int ShiftTime { get; set; }
 
-        public List<Report> Reports { get; set; }
+        public List<Report> Reports { get; set; } = new List<Report>();
+        public List<Project> Projects { get; set; } = new List<Project>();
     }
 }

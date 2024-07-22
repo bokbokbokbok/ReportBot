@@ -22,7 +22,7 @@ namespace McgTgBotNet.Services
         public MessageProcess(TelegramBotClient _client)
         {
             client = _client;
-            _worksnapsService = new WorksnapsService("mEJbcCmiAMBc95Fsf3FaOO22ElEdc1YJ78vkK4z7");
+            _worksnapsService = new WorksnapsService("MCCNm0JhBxAAbhsl4CvrV3ljBVtFVrYlcGATKhFX");
         }
 
         public async Task<bool> ProcessMessageAsync(Update update)
@@ -83,10 +83,14 @@ namespace McgTgBotNet.Services
                 };
 
                 DBContext.AddUser(user);
+
+                await _worksnapsService.AddProjectToUser(user.WorksnapsId);
                 var buttons = new KeyboardButton[][]
                 {
                     new KeyboardButton[] { "Select menu" },
-                    new KeyboardButton[] { "Update shift time"}, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
+                    new KeyboardButton[] { "Update shift time" },
+                    new KeyboardButton[] { "Daylireport format" },
+                    new KeyboardButton[] { "Close" }
                 };
 
                 var sent = client.SendTextMessageAsync(
@@ -100,15 +104,15 @@ namespace McgTgBotNet.Services
             {
                 var sent = client.SendTextMessageAsync(
                     message.Chat.Id,
-                    "Please enter your new shift time in minutes.\n\nExample:\n/shiftTime: 120"
+                    "Please enter your new shift time in minutes.\n\nExample:\n/updateShiftTime: 120"
                     );
             }
 
-            if (message.Text.ToLower().Contains("/shifttime"))
+            if (message.Text.ToLower().Contains("/updateshifttime"))
             {
                 var shiftTime = int.Parse(Regex.Match(message.Text, @"\d+").Value);
 
-                DBContext.UpdateUser(message.Chat.Id, shiftTime);
+                DBContext.UpdateUserShiftTime(message.Chat.Id, shiftTime);
 
                 var sent = client.SendTextMessageAsync(
                     message.Chat.Id,
@@ -142,7 +146,7 @@ namespace McgTgBotNet.Services
                 var buttons = new KeyboardButton[][]
                 {
                     new KeyboardButton[] { "Select menu" },
-                    new KeyboardButton[] { "Update shift time"}, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
+                    new KeyboardButton[] { "Update shift time" }, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
                 };
 
                 var sent = client.SendTextMessageAsync(message.Chat.Id, "Choose a response",

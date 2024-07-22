@@ -1,4 +1,5 @@
 ﻿using Hangfire;
+using McgTgBot.DB;
 using McgTgBotNet.Hangfire.Extensions;
 using McgTgBotNet.Services;
 using Microsoft.Extensions.Hosting;
@@ -29,7 +30,6 @@ namespace McgTgBotNet
             using (var server = new BackgroundJobServer())
             {
                 Console.WriteLine("Hangfire Server started.");
-
 
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
                 var token = "7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214";
