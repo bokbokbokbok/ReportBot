@@ -4,8 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Hangfire;
 using Hangfire.Jobs;
-using McgTgBotNet.Services;
-using ReportBot.Services.Services.Interfaces;
 using Hangfire.SqlServer;
 using Microsoft.Extensions.Configuration;
 
@@ -23,7 +21,7 @@ namespace McgTgBotNet.Hangfire.Extensions
 
             hangfireService.SetupRecurring<WorksnapsUserJob>(
                 WorksnapsUserJob.Id,
-                "* * * * *");
+                "*/10 * * * *");
         }
 
         public static void AddHangfire(this IServiceCollection services, ConfigurationManager configuration)
