@@ -130,6 +130,35 @@ namespace McgTgBotNet.Services
                     );
             }
 
+            if (message.Text.ToLower().Contains("my reports"))
+            {
+                var reports = await _reportService.GetReportsForUserAsync(message.Chat.Id);
+
+                var text = "📋 Your reports:\n\n";
+
+                foreach (var report in reports)
+                {
+                    text += $"💻 Project: {report.Project.Name}\n" +
+                            $"📅 Date: {report.DateOfShift.Date}\n" +
+                            $"⏰ Time: {report.TimeOfShift} minutes\n" +
+                            $"📝 {report.Message}\n\n";
+                }
+
+                var buttons = new KeyboardButton[][]
+                {
+                    new KeyboardButton[] { "Profile" },
+                    new KeyboardButton[] { "Update shift time" },
+                    new KeyboardButton[] { "Add daylireport" },
+                    new KeyboardButton[] { "My reports" },
+                    new KeyboardButton[] { "Close" }
+                };
+
+                var sent = client.SendTextMessageAsync(
+                    message.Chat.Id,
+                    text,
+                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
+            }
+
             if (message.Text.ToLower().Contains("update shift time"))
             {
                 var sent = client.SendTextMessageAsync(

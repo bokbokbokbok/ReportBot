@@ -41,4 +41,17 @@ public class ReportService : IReportService
 
         return _mapper.Map<ReportDTO>(entity);        
     }
+
+    public async Task<List<ReportDTO>> GetReportsForUserAsync(long chatId)
+    {
+        var user = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == chatId)
+            ?? throw new Exception("User not found");
+
+        var reports = await _reportRepository
+            .Include(x => x.Project)
+            .Where(x => x.UserId == user.Id)
+            .ToListAsync();
+
+        return _mapper.Map<List<ReportDTO>>(reports);
+    }
 }
