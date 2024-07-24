@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using McgTgBotNet.Services.Interfaces;
 
 namespace McgTgBotNet;
+
 public class Program
 {
     public static TelegramBotClient client;
@@ -25,32 +26,10 @@ public class Program
             Console.WriteLine("Hangfire Server started.");
 
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            var token = "7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214";
 
-            client = new TelegramBotClient(token);
+            await CreateClientAsync();
 
-            CancellationTokenSource cts = new CancellationTokenSource();
-            ReceiverOptions receiverOptions = new ReceiverOptions()
-            {
-                AllowedUpdates = Array.Empty<UpdateType>() // receive all update types
-            };
-            var me = await client.GetMeAsync();
-            Console.WriteLine(
-              $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
-            );
-
-            client.StartReceiving(
-                updateHandler: BotOnMessageReceived,
-                pollingErrorHandler: HandlePollingErrorAsync,
-                receiverOptions: receiverOptions,
-                cancellationToken: cts.Token
-            );
-
-
-            //client.StartReceiving();
-            //while(true){}
             Console.ReadLine();
-        //client.StopReceiving();
         }
     }
 
@@ -62,20 +41,17 @@ public class Program
         return Task.CompletedTask;
     }
 
-    public TelegramBotClient CreateClient()
+    public static async Task<TelegramBotClient> CreateClientAsync()
     {
-        var token = "";
-
+        var token = "7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214";
         var client = new TelegramBotClient(token);
-        //client.OnMessage += BotOnMessageReceived;
-        //client.OnMessageEdited += BotOnMessageReceived;
-        //client.StartReceiving();
+
         CancellationTokenSource cts = new CancellationTokenSource();
         ReceiverOptions receiverOptions = new ReceiverOptions()
         {
-            AllowedUpdates = Array.Empty<UpdateType>() // receive all update types
+            AllowedUpdates = Array.Empty<UpdateType>()
         };
-        var me = client.GetMeAsync().Result;
+        var me = await client.GetMeAsync();
         Console.WriteLine(
           $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
         );
@@ -96,7 +72,6 @@ public class Program
         serviceCollection.ConfigureServices();
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
-        // Create a scope manually
         using (var scope = serviceProvider.CreateScope())
         {
             var scopedService = scope.ServiceProvider.GetRequiredService<IMessageProcess>();

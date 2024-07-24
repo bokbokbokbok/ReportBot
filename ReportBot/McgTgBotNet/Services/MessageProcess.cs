@@ -1,16 +1,12 @@
-﻿using McgTgBot.DB;
-using McgTgBotNet.Models;
+﻿using McgTgBotNet.Models;
 using McgTgBotNet.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using ReportBot.Common.DTOs;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -22,12 +18,24 @@ namespace McgTgBotNet.Services
         TelegramBotClient client;
         private readonly IWorksnapsService _worksnapsService;
         private readonly IUserService _userService;
+        private readonly IRepository<Project> _projectRepository;
+        private readonly IRepository<DB.Entities.User> _userRepository;
+        private readonly IReportService _reportService;
+        private static List<Message> messageHistory = new List<Message>();
 
-        public MessageProcess(IWorksnapsService worksnapsService, IUserService userService)
+        public MessageProcess(
+            IWorksnapsService worksnapsService,
+            IUserService userService,
+            IRepository<Project> projectRepository,
+            IReportService reportService,
+            IRepository<DB.Entities.User> userRepository)
         {
             client = new TelegramBotClient("7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214");
             _worksnapsService = worksnapsService;
             _userService = userService;
+            _projectRepository = projectRepository;
+            _reportService = reportService;
+            _userRepository = userRepository;
         }
 
         public async Task<bool> ProcessMessageAsync(Update update)
@@ -45,8 +53,17 @@ namespace McgTgBotNet.Services
             }
             catch (Exception ex)
             {
+                var buttons = new KeyboardButton[][]
+                {
+                    new KeyboardButton[] { "Profile" },
+                    new KeyboardButton[] { "Update shift time" },
+                    new KeyboardButton[] { "Add daylireport" },
+                    new KeyboardButton[] { "My reports" },
+                    new KeyboardButton[] { "Close" }
+                };
+
                 if (update.Message != null)
-                    await client.SendTextMessageAsync(update.Message.Chat.Id, ex.Message);
+                    await client.SendTextMessageAsync(update.Message.Chat.Id, ex.Message, replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
             return true;
         }
@@ -64,18 +81,17 @@ namespace McgTgBotNet.Services
             {
                 var buttons = new KeyboardButton[][]
                 {
-                    new KeyboardButton[] { "Select menu" },
+                    new KeyboardButton[] { "Profile" },
                     new KeyboardButton[] { "Update shift time" },
-                    new KeyboardButton[] { "Daylireport format" },
+                    new KeyboardButton[] { "Add daylireport" },
+                    new KeyboardButton[] { "My reports" },
                     new KeyboardButton[] { "Close" }
                 };
 
                 var sent = client.SendTextMessageAsync(
                     message.Chat.Id,
                     "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n/shiftTime: 120\r\n\r\nThank you!",
-                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true }
-
-                    );
+                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
 
             if (message.Text.ToLower().Contains("/email") && message.Text.ToLower().Contains("/shifttime"))
@@ -87,7 +103,7 @@ namespace McgTgBotNet.Services
                 var id = await _worksnapsService.GetUserId(match.Groups["email"].Value);
                 int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
                 var user = new DB.Entities.User
-                {
+                { 
                     ChatId = message.Chat.Id,
                     WorksnapsId = id,
                     Username = message.From.Username,
@@ -103,7 +119,7 @@ namespace McgTgBotNet.Services
                 {
                     new KeyboardButton[] { "Select menu" },
                     new KeyboardButton[] { "Update shift time" },
-                    new KeyboardButton[] { "Daylireport format" },
+                    new KeyboardButton[] { "Add daylireport" },
                     new KeyboardButton[] { "Close" }
                 };
 
@@ -155,23 +171,49 @@ namespace McgTgBotNet.Services
 
             }
 
-            if (message.Text.ToLower().Contains("help"))
-            {
-                var buttons = new KeyboardButton[][]
-                {
-                    new KeyboardButton[] { "Select menu" },
-                    new KeyboardButton[] { "Update shift time" }, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
-                };
+            //if (message.Text.ToLower().Contains("help"))
+            //{
+            //    var buttons = new KeyboardButton[][]
+            //    {
+            //        new KeyboardButton[] { "Select menu" },
+            //        new KeyboardButton[] { "Update shift time" }, new KeyboardButton[] { "Daylireport format" }, new KeyboardButton[] { "Close" }
+            //    };
 
-                var sent = client.SendTextMessageAsync(message.Chat.Id, "Choose a response",
+            //    var sent = client.SendTextMessageAsync(message.Chat.Id, "Choose a response",
+            //        replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
+            //}
+
+            if (message.Text.ToLower().Contains("add daylireport"))
+            {
+                var user = _userRepository.Include(x => x.Projects).FirstOrDefault(x => x.ChatId == message.Chat.Id)
+                        ?? throw new Exception("User not found");
+
+                List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
+
+                foreach (var project in user.Projects)
+                {
+                    KeyboardButton[] row = new KeyboardButton[]
+                    {
+                            new KeyboardButton(project.Name)
+                    };
+
+                    buttons.Add(row);
+                }
+
+                await client.SendTextMessageAsync(
+                    user.ChatId,
+                    $"👋 Hello {user.FirstName} {user.LastName}!\n\nNow, please select the project you are working on:",
                     replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
 
-            if (message.Text.ToLower().Contains("daylireport format"))
+            if (IsProjectExist(message.Text.ToLower()))
             {
-                var text = "#dailyreport - маркер для бота\r\n#nickname - тг ник работника\r\n#projectname - название проекта\r\n#date - дата смены\r\n#time - затраченное время\r\n";
+                messageHistory.Add(message);
 
-                var sent = client.SendTextMessageAsync(message.Chat.Id, text);
+                var text = "Please, describe what you did. Example:\n\n#dailyreport #date: 07/23/2024 #time: 300\r\nПрацював над проектами. Зробив щоб для конкретного юзера проекти підтягувались з worksnaps. Також зробив зв'язки між проектами та юзерами.\n\n#dailyreport - маркер для бота\r\n#date - дата смены\r\n#time - затраченное время\r\n";
+
+                var send = client.SendTextMessageAsync(message.Chat.Id, text,
+                    replyMarkup: new ReplyKeyboardRemove());
             }
 
             if (message.Text.ToLower() == "close")
@@ -205,38 +247,28 @@ namespace McgTgBotNet.Services
 
             if (message.Text.ToLower().Contains("#dailyreport"))
             {
-                string first;
-                using (var reader = new StringReader(message.Text))
+                string pattern = @"#date:\s*(?<date>[^ ]+)\s*#time:\s*(?<time>\d+)";
+
+                Match match = Regex.Match(message.Text, pattern, RegexOptions.IgnoreCase);
+
+                var date = DateTime.Parse(match.Groups["date"].Value);
+                var time = int.Parse(match.Groups["time"].Value);
+
+                var projectName = messageHistory.Last().Text
+                    ?? throw new Exception("Sorry, but you have not entered a project");
+
+                var report = new CreateReportDTO
                 {
-                    first = reader.ReadLine();
-                }
-                first = Regex.Replace(first, @"\s+", "");
-
-                var values = first.Split('#');
-                values = values.Where(p => p.Length > 0).ToArray();
-
-                if (values.Length > 1)
-                {
-                    var reportUser = new Models.ReportUser();
-                    var nickname = values[1];
-
-                    if (reportUser == null)
-                    {
-                        //reportUser = DBContext.CreateUser(message, nickname);
-
-                        await client.SendTextMessageAsync(message.Chat.Id, "Hello " + reportUser.UserName + "! Nice to meet you.");
-                    }
-                    else if (reportUser.UserName != nickname)
-                    {
-                        var oldName = reportUser.UserName;
-                        reportUser.UserName = nickname;
-                        //DBContext.UpdateUser(reportUser);
-
-                        await client.SendTextMessageAsync(message.Chat.Id, "What a nice new name you got here! Changed " + oldName + " for " + reportUser.UserName);
-                    }
-                }
-
-                //DBContext.CreateReport(message);
+                    ChatId = message.Chat.Id,
+                    DateOfShift = date,
+                    TimeOfShift = time,
+                    Created = DateTime.Now,
+                    Message = message.Text,
+                    UserName = message.From!.Username!,
+                    ProjectName = projectName,
+                };
+                
+                var result = await _reportService.AddReportAsync(report);
 
                 await client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report");
             }
@@ -391,6 +423,16 @@ namespace McgTgBotNet.Services
 
                 var sent = client.EditMessageTextAsync(message.Message.Chat.Id, message.Message.MessageId, msgText);
             }
+        }
+
+        private bool IsProjectExist(string projectName)
+        {
+            var project = _projectRepository.FirstOrDefault(x => x.Name.ToLower() == projectName.ToLower());
+
+            if (project == null)
+                return false;
+
+            return true;
         }
     }
 }

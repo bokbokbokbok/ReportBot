@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using McgTgBotNet.DB.Entities;
-using McgTgBotNet.DTOs;
+﻿using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;

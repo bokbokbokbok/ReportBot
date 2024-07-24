@@ -32,7 +32,10 @@ public static class HostExtension
         services.AddScoped<IMessageProcess, MessageProcess>();
         services.AddScoped<IWorksnapsService, WorksnapsService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IReportService, ReportService>();
+
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer("Server=(local);Database=ReportBot;Trusted_Connection=True;TrustServerCertificate=true;"));
 

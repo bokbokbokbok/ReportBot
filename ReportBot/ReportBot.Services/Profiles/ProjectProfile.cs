@@ -2,13 +2,13 @@
 using McgTgBotNet.DTOs;
 using McgTgBotNet.Models;
 
-namespace McgTgBotNet.Profiles
+namespace McgTgBotNet.Profiles;
+
+public class ProjectProfile : Profile
 {
-    public class ProjectProfile : Profile
+    public ProjectProfile()
     {
-        public ProjectProfile()
-        {
-            CreateMap<ProjectDTO, Project>();
-        }
+        CreateMap<ProjectDTO, Project>();
+        CreateMap<Project, ProjectDTO > ();
     }
 }
