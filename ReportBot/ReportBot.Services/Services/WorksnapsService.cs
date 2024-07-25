@@ -32,7 +32,7 @@ namespace McgTgBotNet.Services
             _projectRepository = projectRepository;
         }
 
-        public async Task<Dictionary<int, bool>> GetSummaryReportsAsync()
+        public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync()
         {
             var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
 
@@ -50,32 +50,9 @@ namespace McgTgBotNet.Services
                 data.Add(item);
             }
 
-            return IsSessionFinished(data);
+            return await IsSessionFinishedAsync(data);
         }
 
-        private Dictionary<int, bool> IsSessionFinished(List<SummaryReportDTO> data)
-        {
-            var usersIsFinished = new Dictionary<int, bool>();
-
-            foreach (var item in data)
-            {
-                var user = _userRepository.FirstOrDefault(x => x.WorksnapsId == item.UserId);
-
-                if (user == null)
-                    continue;
-
-                if (item.DurationInMinutes >= user.ShiftTime)
-                {
-                    usersIsFinished.Add(item.UserId, true);
-                }
-                else
-                {
-                    usersIsFinished.Add(item.UserId, false);
-                }
-            }
-
-            return usersIsFinished;
-        }
 
         public async Task<int> GetUserId(string email)
         {
@@ -165,6 +142,57 @@ namespace McgTgBotNet.Services
             var result = await _userRepository.UpdateAsync(user);
 
             return result;
+        }
+
+        private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)
+        {
+            var result = new List<SummaryReportDTO>();
+
+            foreach (var item in data)
+            {
+                var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
+
+                if (user == null)
+                    continue;
+
+                if (item.DurationInMinutes >= user.ShiftTime)
+                {
+                    if(await GetTimeEntryAsync(item))
+                        result.Add(item);
+                }
+            }
+
+            return result;
+        }
+
+        private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
+        {
+            DateTime startOfDay = DateTime.Today.Date;
+            DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+            var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
+            var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
+
+            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/112165/time_entries.xml?user_ids=1036318&from_timestamp={fromTimestamp}&to_timestamp={toTimestamp}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+
+            var doc = XDocument.Parse(content);
+
+            var data = new List<TimeEntryDTO>();
+            foreach (var element in doc.Root!.Elements())
+            {
+                var item = element.ParseXML<TimeEntryDTO>();
+
+                data.Add(item);
+            }
+
+            var lastTimeEntry = DateTimeOffset.FromUnixTimeSeconds(data.Last().LoggedTimestamp).UtcDateTime.ToLocalTime();
+
+            if (lastTimeEntry.AddMinutes(10) > DateTime.Now)
+                return true;
+
+            return false;
         }
     }
 }

@@ -6,7 +6,7 @@ namespace ReportBot.Services.Services.Interfaces;
 public interface IWorksnapsService
 {
     Task<bool> AddProjectToUser(int userId);
-    Task<Dictionary<int, bool>> GetSummaryReportsAsync();
+    Task<List<SummaryReportDTO>> GetSummaryReportsAsync();
     Task<UserDTO> GetUserByWorksnapsId(int id);
     Task<int> GetUserId(string email);
 }

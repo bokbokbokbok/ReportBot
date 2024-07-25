@@ -37,4 +37,14 @@ public class UserService : IUserService
 
         return result;
     }
+
+    public async Task<User> GetUserByChatIdAsync(long chatId)
+    {
+        var user = await _userRepository
+            .Include(x => x.Projects)
+            .FirstOrDefaultAsync(x => x.ChatId == chatId)
+            ?? throw new Exception("User not found");
+
+        return user;
+    }
 }

@@ -11,21 +11,13 @@ using ReportBot.DataBase.Repositories;
 using ReportBot.Services.Services.Interfaces;
 using ReportBot.Services.Services;
 using McgTgBotNet.Profiles;
+using McgTgBotNet.Hangfire.Extensions;
+using Hangfire;
 
 namespace McgTgBotNet.Extensions;
 
 public static class HostExtension
 {
-    public static IHostBuilder CreateHostBuilder(this string[] args) =>
-             Host.CreateDefaultBuilder(args)
-                 .ConfigureServices((context, services) =>
-                 {
-                     services.AddSingleton<IHangfireService, HangfireService>();
-                     services.AddScoped<IWorksnapsService, WorksnapsService>();
-                     services.AddScoped <IMessageProcess, MessageProcess>();
-                     services.AddScoped<IUserService, UserService>();
-                 });
-
     public static void ConfigureServices(this IServiceCollection services)
     {
         services.AddAutoMapper(typeof(ProjectProfile));
@@ -33,6 +25,7 @@ public static class HostExtension
         services.AddScoped<IWorksnapsService, WorksnapsService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IHangfireService, HangfireService>();
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 

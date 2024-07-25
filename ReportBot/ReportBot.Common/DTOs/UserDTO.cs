@@ -7,14 +7,14 @@ namespace McgTgBotNet.DTOs
         [XMLProperty("id")]
         public int Id { get; set; }
         [XMLProperty("login")]
-        public string Login { get; set; }
+        public string Login { get; set; } = string.Empty;
         [XMLProperty("first_name")]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
         [XMLProperty("last_name")]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
         [XMLProperty("email")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
         [XMLProperty("api_token")]
-        public string ApiToken { get; set; }
+        public string ApiToken { get; set; } = string.Empty;
     }
 }

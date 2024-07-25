@@ -25,32 +25,29 @@ namespace Hangfire.Jobs
 
         public async Task Run(CancellationToken cancellationToken = default)
         {
-            var userFinished = await _worksnapsService.GetSummaryReportsAsync();
+             var userFinished = await _worksnapsService.GetSummaryReportsAsync();
 
             foreach (var item in userFinished)
             {
-                if (item.Value)
+                var user = _userRepository.Include(x => x.Projects).FirstOrDefault(x => x.WorksnapsId == item.UserId)
+                    ?? throw new Exception("User not found");
+
+                List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
+
+                foreach (var project in user.Projects)
                 {
-                    var user = _userRepository.Include(x => x.Projects).FirstOrDefault(x => x.WorksnapsId == item.Key)
-                        ?? throw new Exception("User not found");
-
-                    List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
-
-                    foreach (var project in user.Projects)
+                    KeyboardButton[] row = new KeyboardButton[]
                     {
-                        KeyboardButton[] row = new KeyboardButton[]
-                        {
-                            new KeyboardButton(project.Name)
-                        };
+                        new KeyboardButton(project.Name)
+                    };
 
-                        buttons.Add(row);
-                    }
-
-                    await client.SendTextMessageAsync(
-                        user.ChatId,
-                        $"👋 Hello {user.FirstName} {user.LastName}!\n\nYou have successfully completed your session. Great job! 🎉\n\nNow, please select the project you are working on:",
-                        replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
+                    buttons.Add(row);
                 }
+
+                await client.SendTextMessageAsync(
+                    user.ChatId,
+                    $"👋 Hello {user.FirstName} {user.LastName}!\n\nYou have successfully completed your session. Great job! 🎉\n\nNow, please select the project you are working on:",
+                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
         }
     }

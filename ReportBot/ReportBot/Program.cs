@@ -22,7 +22,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 // Hangfire
 builder.Services.AddHangfire(builder.Configuration);
 
-
 // Repository
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
@@ -52,5 +51,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseHangfireDashboard("/hangfire");
 
 app.Run();

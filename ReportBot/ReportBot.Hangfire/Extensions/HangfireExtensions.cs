@@ -13,11 +13,9 @@ namespace McgTgBotNet.Hangfire.Extensions
     {
         public static void SetupHangfire(this IHost host)
         {
-            var scope = host.Services.CreateScope();
+            using var scope = host.Services.CreateScope();
             var services = scope.ServiceProvider;
-
             var hangfireService = services.GetRequiredService<IHangfireService>();
-            GlobalConfiguration.Configuration.UseSqlServerStorage("Server=(local);Database=ReportBot;Trusted_Connection=True;TrustServerCertificate=true;");
 
             hangfireService.SetupRecurring<WorksnapsUserJob>(
                 WorksnapsUserJob.Id,

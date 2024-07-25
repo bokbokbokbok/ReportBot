@@ -17,20 +17,11 @@ public class Program
 
     public static async Task Main(string[] args)
     {
-        var host = args.CreateHostBuilder().Build();
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-        host.SetupHangfire();
+        await CreateClientAsync();
 
-        using (var server = new BackgroundJobServer())
-        {
-            Console.WriteLine("Hangfire Server started.");
-
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-            await CreateClientAsync();
-
-            Console.ReadLine();
-        }
+        Console.ReadLine();
     }
 
     private static Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -61,7 +52,6 @@ public class Program
             receiverOptions: receiverOptions,
             cancellationToken: cts.Token
         );
-
 
         return client;
     }
