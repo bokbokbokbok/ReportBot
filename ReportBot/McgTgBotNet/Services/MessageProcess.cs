@@ -10,6 +10,7 @@ using ReportBot.Services.Services.Interfaces;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace McgTgBotNet.Services
@@ -64,10 +65,22 @@ namespace McgTgBotNet.Services
 
             if (message!.Text!.ToLower().Contains("start"))
             {
-               var sent = client.SendTextMessageAsync(
-                    message.Chat.Id,
-                    "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n/shiftTime: 120\r\n\r\nThank you!",
-                    replyMarkup: mainKeyboard);
+                var user = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message.Chat.Id);
+
+                if (user == null)
+                {
+                    var sent = await client.SendTextMessageAsync(
+                        message.Chat.Id,
+                        "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n/shiftTime: 120\r\n\r\nThank you!",
+                        replyMarkup: mainKeyboard);
+                }
+                else
+                {
+                    var sent = await client.SendTextMessageAsync(
+                         message.Chat.Id,
+                         $"👋Hi, {user.FirstName} {user.LastName}! How can I help you?",
+                         replyMarkup: mainKeyboard);
+                }
             }
 
             if (message.Text.ToLower().Contains("profile"))
@@ -75,15 +88,16 @@ namespace McgTgBotNet.Services
                 var user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
 
                 var text = $"👤 Profile\n" +
-                           $"Username: {user.Username}\n" +
-                           $"First Name: {user.FirstName}\n" +
-                           $"Last Name: {user.LastName}\n" +
-                           $"Shift Time: {user.ShiftTime} minutes";
+                           $"_Username:_ {user.Username}\n" +
+                           $"_First Name:_ {user.FirstName}\n" +
+                           $"_Last Name:_ {user.LastName}\n" +
+                           $"_Shift Time:_ {user.ShiftTime} minutes";
 
-                var sent = client.SendTextMessageAsync(
+                var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     text,
-                    replyMarkup: mainKeyboard);
+                    replyMarkup: mainKeyboard,
+                    parseMode: ParseMode.MarkdownV2);
             }
 
             if (message.Text.ToLower().Contains("/email") && message.Text.ToLower().Contains("/shifttime"))
@@ -95,7 +109,7 @@ namespace McgTgBotNet.Services
                 var id = await _worksnapsService.GetUserId(match.Groups["email"].Value);
                 int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
                 var user = new DB.Entities.User
-                { 
+                {
                     ChatId = message.Chat.Id,
                     WorksnapsId = id,
                     Username = message.From!.Username!,
@@ -108,7 +122,7 @@ namespace McgTgBotNet.Services
 
                 await _worksnapsService.AddProjectToUser(user.WorksnapsId);
 
-                var sent = client.SendTextMessageAsync(
+                var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     "🎉 Thank you for registering! 🎉\n\nWe're excited to have you on board. If you have any questions, feel free to reach out!",
                     replyMarkup: mainKeyboard);
@@ -128,7 +142,7 @@ namespace McgTgBotNet.Services
                             $"📝 {report.Message}\n\n";
                 }
 
-                var sent = client.SendTextMessageAsync(
+                var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     text,
                     replyMarkup: mainKeyboard);
@@ -136,7 +150,7 @@ namespace McgTgBotNet.Services
 
             if (message.Text.ToLower().Contains("update shift time"))
             {
-                var sent = client.SendTextMessageAsync(
+                var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     "Please enter your new shift time in minutes.\n\nExample:\n/updateShiftTime: 120"
                     );
@@ -148,7 +162,7 @@ namespace McgTgBotNet.Services
 
                 await _userService.UpdateUserShiftTimeAsync(message.Chat.Id, shiftTime);
 
-                var sent = client.SendTextMessageAsync(
+                var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     "Thank you for updating shift time"
                     );
@@ -177,19 +191,19 @@ namespace McgTgBotNet.Services
                     replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
 
-            if (IsProjectExist(message.Text.ToLower()))
+            if (await IsProjectExistAsync(message.Text.ToLower()))
             {
                 messageHistory.Add(message);
 
                 var text = "Please, describe what you did. Example:\n\n#dailyreport #date: 07/23/2024 #time: 300\r\nПрацював над проектами. Зробив щоб для конкретного юзера проекти підтягувались з worksnaps. Також зробив зв'язки між проектами та юзерами.\n\n#dailyreport - маркер для бота\r\n#date - дата смены\r\n#time - затраченное время\r\n";
 
-                var send = client.SendTextMessageAsync(message.Chat.Id, text,
+                var send = await client.SendTextMessageAsync(message.Chat.Id, text,
                     replyMarkup: new ReplyKeyboardRemove());
             }
 
             if (message.Text.ToLower() == "close")
             {
-                var sent = client.SendTextMessageAsync(message.Chat.Id, "Removing keyboard",
+                var sent = await client.SendTextMessageAsync(message.Chat.Id, "Removing keyboard",
                     replyMarkup: new ReplyKeyboardRemove());
             }
 
@@ -215,7 +229,7 @@ namespace McgTgBotNet.Services
                     UserName = message.From!.Username!,
                     ProjectName = projectName,
                 };
-                
+
                 var result = await _reportService.AddReportAsync(report);
 
                 await client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report", replyMarkup: mainKeyboard);
@@ -223,9 +237,9 @@ namespace McgTgBotNet.Services
 
         }
 
-        private bool IsProjectExist(string projectName)
+        private async Task<bool> IsProjectExistAsync(string projectName)
         {
-            var project = _projectRepository.FirstOrDefault(x => x.Name.ToLower() == projectName.ToLower());
+            var project = await _projectRepository.FirstOrDefaultAsync(x => x.Name.ToLower() == projectName.ToLower());
 
             if (project == null)
                 return false;

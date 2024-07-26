@@ -4,8 +4,6 @@ using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.DataBase.Repositories;
 using ReportBot.Services.Services.Interfaces;
 using McgTgBotNet.Services;
-using Hangfire;
-using McgTgBotNet.Hangfire.Extensions;
 using ReportBot.Services.Services;
 using McgTgBotNet.Profiles;
 
