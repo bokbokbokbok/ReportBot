@@ -9,190 +9,189 @@ using ReportBot.Services.Services.Interfaces;
 using ReportBot.DataBase.Repositories.Interfaces;
 using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
+using static System.Collections.Specialized.BitVector32;
 
-namespace McgTgBotNet.Services
+namespace McgTgBotNet.Services;
+
+public class WorksnapsService : IWorksnapsService
 {
-    public class WorksnapsService : IWorksnapsService
+    private readonly IRepository<User> _userRepository;
+    private readonly IRepository<Project> _projectRepository;
+    private readonly HttpClient _httpClient;
+    private readonly IMapper _mapper;
+
+
+    public WorksnapsService(
+        IRepository<User> userRepository,
+        IRepository<Project> projectRepository,
+        IMapper mapper)
     {
-        private readonly IRepository<User> _userRepository;
-        private readonly IRepository<Project> _projectRepository;
-        private readonly HttpClient _httpClient;
-        private readonly IMapper _mapper;
+        _httpClient = new HttpClient();
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(ConfigExtension.GetConfiguration("Worksnaps:ApiKey"))));
+        _mapper = mapper;
+        _userRepository = userRepository;
+        _projectRepository = projectRepository;
+    }
 
+    public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync()
+    {
+        var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
 
-        public WorksnapsService(
-            IRepository<User> userRepository,
-            IRepository<Project> projectRepository,
-            IMapper mapper)
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/summary_reports?from_date={today}&to_date={today}&name=manager_report");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<SummaryReportDTO>();
+        foreach (var element in doc.Root!.Elements())
         {
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes("MCCNm0JhBxAAbhsl4CvrV3ljBVtFVrYlcGATKhFX")));
-            _mapper = mapper;
-            _userRepository = userRepository;
-            _projectRepository = projectRepository;
+            var item = element.ParseXML<SummaryReportDTO>();
+
+            data.Add(item);
         }
 
-        public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync()
+        return await IsSessionFinishedAsync(data);
+    }
+
+    public async Task<int> GetUserId(string email)
+    {
+        if (Regex.IsMatch(email, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$") == false)
+            throw new ArgumentException("Email is not valid");
+
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users.xml");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<UserDTO>();
+
+        foreach (var element in doc.Root!.Elements())
         {
-            var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
+            var item = element.ParseXML<UserDTO>();
 
-            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/summary_reports?from_date={today}&to_date={today}&name=manager_report");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(content);
-
-            var data = new List<SummaryReportDTO>();
-            foreach (var element in doc.Root!.Elements())
-            {
-                var item = element.ParseXML<SummaryReportDTO>();
-
-                data.Add(item);
-            }
-
-            return await IsSessionFinishedAsync(data);
+            data.Add(item);
         }
 
+        var user = data.FirstOrDefault(x => x.Email == email);
 
-        public async Task<int> GetUserId(string email)
+        if (user == null)
+            throw new ArgumentException($"😔 No user with this email was found. Email: {email}");
+
+        return user.Id;
+    }
+
+    public async Task<UserDTO> GetUserByWorksnapsId(int id)
+    {
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users/{id}.xml");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var user = doc.Root!.ParseXML<UserDTO>();
+
+        if (user == null)
+            throw new ArgumentException($"No user with this id was found. Id: {id}");
+
+        return user;
+    }
+
+    public async Task<bool> AddProjectToUser(int userId)
+    {
+        var userWorksnaps = await GetUserByWorksnapsId(userId);
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
+
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects.xml");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<ProjectDTO>();
+
+        foreach (var element in doc.Root!.Elements())
         {
-            if (Regex.IsMatch(email, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$") == false)
-                throw new ArgumentException("Email is not valid");
+            var item = element.ParseXML<ProjectDTO>();
 
-            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users.xml");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
+            data.Add(item);
+        }
 
-            var doc = XDocument.Parse(content);
+        var projects = new List<Project>();
 
-            var data = new List<UserDTO>();
-
-            foreach (var element in doc.Root!.Elements())
+        foreach(var item in _mapper.Map<List<Project>>(data))
+        {
+            var project = await _projectRepository.FirstOrDefaultAsync(x => x.Name == item.Name);
+            if (project == null)
             {
-                var item = element.ParseXML<UserDTO>();
-
-                data.Add(item);
+                await _projectRepository.InsertAsync(item);
+                projects.Add(item);
             }
+            else
+            {
+                projects.Add(project);
+            }
+        }
+        var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == userId)
+            ?? throw new Exception("User not found");
 
-            var user = data.FirstOrDefault(x => x.Email == email);
+        user.Projects.AddRange(projects);
+
+        var result = await _userRepository.UpdateAsync(user);
+
+        return result;
+    }
+
+    private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)
+    {
+        var result = new List<SummaryReportDTO>();
+
+        foreach (var item in data)
+        {
+            var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
 
             if (user == null)
-                throw new ArgumentException($"😔 No user with this email was found. Email: {email}");
+                continue;
 
-            return user.Id;
-        }
-
-        public async Task<UserDTO> GetUserByWorksnapsId(int id)
-        {
-            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users/{id}.xml");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(content);
-
-            var user = doc.Root!.ParseXML<UserDTO>();
-
-            if (user == null)
-                throw new ArgumentException($"No user with this id was found. Id: {id}");
-
-            return user;
-        }
-
-        public async Task<bool> AddProjectToUser(int userId)
-        {
-            var userWorksnaps = await GetUserByWorksnapsId(userId);
-
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
-
-            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects.xml");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(content);
-
-            var data = new List<ProjectDTO>();
-
-            foreach (var element in doc.Root!.Elements())
+            if (item.DurationInMinutes >= user.ShiftTime)
             {
-                var item = element.ParseXML<ProjectDTO>();
-
-                data.Add(item);
+                if(await GetTimeEntryAsync(item))
+                    result.Add(item);
             }
-
-            var projects = new List<Project>();
-
-            foreach(var item in _mapper.Map<List<Project>>(data))
-            {
-                var project = await _projectRepository.FirstOrDefaultAsync(x => x.Name == item.Name);
-                if (project == null)
-                {
-                    await _projectRepository.InsertAsync(item);
-                    projects.Add(item);
-                }
-                else
-                {
-                    projects.Add(project);
-                }
-            }
-            var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == userId)
-                ?? throw new Exception("User not found");
-
-            user.Projects.AddRange(projects);
-
-            var result = await _userRepository.UpdateAsync(user);
-
-            return result;
         }
 
-        private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)
+        return result;
+    }
+
+    private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
+    {
+        DateTime startOfDay = DateTime.Today.Date;
+        DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+        var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
+        var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
+
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/112165/time_entries.xml?user_ids=1036318&from_timestamp={fromTimestamp}&to_timestamp={toTimestamp}");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<TimeEntryDTO>();
+        foreach (var element in doc.Root!.Elements())
         {
-            var result = new List<SummaryReportDTO>();
+            var item = element.ParseXML<TimeEntryDTO>();
 
-            foreach (var item in data)
-            {
-                var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
-
-                if (user == null)
-                    continue;
-
-                if (item.DurationInMinutes >= user.ShiftTime)
-                {
-                    if(await GetTimeEntryAsync(item))
-                        result.Add(item);
-                }
-            }
-
-            return result;
+            data.Add(item);
         }
 
-        private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
-        {
-            DateTime startOfDay = DateTime.Today.Date;
-            DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+        var lastTimeEntry = DateTimeOffset.FromUnixTimeSeconds(data.Last().LoggedTimestamp).UtcDateTime.ToLocalTime();
 
-            var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
-            var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
+        if (lastTimeEntry.AddMinutes(10) > DateTime.Now)
+            return true;
 
-            var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/112165/time_entries.xml?user_ids=1036318&from_timestamp={fromTimestamp}&to_timestamp={toTimestamp}");
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-
-            var doc = XDocument.Parse(content);
-
-            var data = new List<TimeEntryDTO>();
-            foreach (var element in doc.Root!.Elements())
-            {
-                var item = element.ParseXML<TimeEntryDTO>();
-
-                data.Add(item);
-            }
-
-            var lastTimeEntry = DateTimeOffset.FromUnixTimeSeconds(data.Last().LoggedTimestamp).UtcDateTime.ToLocalTime();
-
-            if (lastTimeEntry.AddMinutes(10) > DateTime.Now)
-                return true;
-
-            return false;
-        }
+        return false;
     }
 }

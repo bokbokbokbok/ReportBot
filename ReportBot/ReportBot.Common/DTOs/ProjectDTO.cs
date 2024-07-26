@@ -4,8 +4,6 @@ namespace McgTgBotNet.DTOs
 {
     public class ProjectDTO
     {
-        //[XMLProperty("id")]
-        //public int Id { get; set; }
         [XMLProperty("name")]
         public string Name { get; set; } = string.Empty;
         [XMLProperty("description")]

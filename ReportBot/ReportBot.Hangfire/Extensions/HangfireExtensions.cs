@@ -11,18 +11,18 @@ namespace McgTgBotNet.Hangfire.Extensions
 {
     public static class HangfireExtensions
     {
-        public static void SetupHangfire(this IHost host)
-        {
-            using var scope = host.Services.CreateScope();
-            var services = scope.ServiceProvider;
-            var hangfireService = services.GetRequiredService<IHangfireService>();
+        //public static void SetupHangfire(this IHost host)
+        //{
+        //    using var scope = host.Services.CreateScope();
+        //    var services = scope.ServiceProvider;
+        //    var hangfireService = services.GetRequiredService<IHangfireService>();
 
-            hangfireService.SetupRecurring<WorksnapsUserJob>(
-                WorksnapsUserJob.Id,
-                "*/10 * * * *");
-        }
+        //    hangfireService.SetupRecurring<WorksnapsUserJob>(
+        //        WorksnapsUserJob.Id,
+        //        "*/10 * * * *");
+        //}
 
-        public static void AddHangfire(this IServiceCollection services, ConfigurationManager configuration)
+        public static void AddHangfire(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHangfire(
                 cfg => cfg.UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection")));
