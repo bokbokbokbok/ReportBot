@@ -1,4 +1,5 @@
-﻿using McgTgBotNet.Keyboards;
+﻿using McgTgBotNet.Extensions;
+using McgTgBotNet.Keyboards;
 using McgTgBotNet.Models;
 using McgTgBotNet.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +33,7 @@ namespace McgTgBotNet.Services
             IReportService reportService,
             IRepository<DB.Entities.User> userRepository)
         {
-            client = new TelegramBotClient("7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214");
+            client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
             _worksnapsService = worksnapsService;
             _userService = userService;
             _projectRepository = projectRepository;
@@ -234,7 +235,6 @@ namespace McgTgBotNet.Services
 
                 await client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report", replyMarkup: mainKeyboard);
             }
-
         }
 
         private async Task<bool> IsProjectExistAsync(string projectName)
