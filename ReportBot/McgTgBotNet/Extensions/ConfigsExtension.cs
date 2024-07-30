@@ -2,7 +2,7 @@
 
 namespace McgTgBotNet.Extensions;
 
-public class ConfigExtension
+public class ConfigsExtension
 {
     public static string GetConfiguration(string item)
     {

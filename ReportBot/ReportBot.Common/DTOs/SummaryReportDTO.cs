@@ -18,7 +18,7 @@ namespace McgTgBotNet.DTOs
         [XMLProperty("task_id")]
         public int TaskId { get; set; }
         [XMLProperty("type")]
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
         [XMLProperty("duration_in_minutes")]
         public int DurationInMinutes { get; set; }
     }

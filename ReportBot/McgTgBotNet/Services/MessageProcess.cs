@@ -33,7 +33,7 @@ namespace McgTgBotNet.Services
             IReportService reportService,
             IRepository<DB.Entities.User> userRepository)
         {
-            client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
+            client = new TelegramBotClient(ConfigsExtension.GetConfiguration("TelegramBot:Token"));
             _worksnapsService = worksnapsService;
             _userService = userService;
             _projectRepository = projectRepository;
@@ -108,6 +108,7 @@ namespace McgTgBotNet.Services
                 Match match = Regex.Match(message.Text, pattern, RegexOptions.IgnoreCase);
 
                 var id = await _worksnapsService.GetUserId(match.Groups["email"].Value);
+                var role = await _worksnapsService.GetUserRoleAsync(id);
                 int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
                 var user = new DB.Entities.User
                 {
@@ -116,7 +117,8 @@ namespace McgTgBotNet.Services
                     Username = message.From!.Username!,
                     FirstName = message.From.FirstName,
                     LastName = message.From.LastName!,
-                    ShiftTime = shiftTime
+                    ShiftTime = shiftTime,
+                    Role = role.ToLower()
                 };
 
                 await _userService.AddUserAsync(user);

@@ -25,7 +25,7 @@ public class Program
         Console.WriteLine("Hangfire Dashboard started at: http://localhost:5000/hangfire");
 
         await CreateClientAsync();
-        await hostTask; ;
+        await hostTask;
     }
 
     private static Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ public class Program
 
     public static async Task<TelegramBotClient> CreateClientAsync()
     {
-        var client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
+        var client = new TelegramBotClient(ConfigsExtension.GetConfiguration("TelegramBot:Token"));
 
         CancellationTokenSource cts = new CancellationTokenSource();
         ReceiverOptions receiverOptions = new ReceiverOptions()

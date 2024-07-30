@@ -1,4 +1,5 @@
 ﻿using McgTgBotNet.DTOs;
+using ReportBot.Common.DTOs.Project;
 
 namespace ReportBot.Common.DTOs;
 

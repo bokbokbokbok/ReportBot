@@ -10,6 +10,7 @@ using ReportBot.DataBase.Repositories.Interfaces;
 using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using static System.Collections.Specialized.BitVector32;
+using ReportBot.Common.DTOs.Project;
 
 namespace McgTgBotNet.Services;
 
@@ -142,6 +143,48 @@ public class WorksnapsService : IWorksnapsService
         var result = await _userRepository.UpdateAsync(user);
 
         return result;
+    }
+
+    public async Task<string> GetUserRoleAsync(int id)
+    {
+        var userWorksnaps = await GetUserByWorksnapsId(id);
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
+
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects.xml");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var projects = new List<ProjectDTO>();
+
+        foreach (var element in doc.Root!.Elements())
+        {
+            var item = element.ParseXML<ProjectDTO>();
+
+            projects.Add(item);
+        }
+
+        var assignmentsResponse = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/{projects.First().Id}/user_assignments.xml");
+        assignmentsResponse.EnsureSuccessStatusCode();
+        var assignmentsContent = await assignmentsResponse.Content.ReadAsStringAsync();
+
+        var assignmentsDoc = XDocument.Parse(assignmentsContent);
+
+        var assignments = new List<AssignmentDTO>();
+
+        foreach (var element in assignmentsDoc.Root!.Elements())
+        {
+            var item = element.ParseXML<AssignmentDTO>();
+
+            assignments.Add(item);
+        }
+
+        var user = assignments.FirstOrDefault(x => x.UserId == id)
+            ?? throw new Exception("Not found user");
+
+        return user.Role;
     }
 
     private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)

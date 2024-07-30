@@ -13,6 +13,7 @@ namespace McgTgBotNet.DB.Entities
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public int ShiftTime { get; set; }
+        public string Role { get; set; } = string.Empty;
 
         public List<Report> Reports { get; set; } = new List<Report>();
         public List<Project> Projects { get; set; } = new List<Project>();
