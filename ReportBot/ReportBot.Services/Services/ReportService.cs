@@ -3,6 +3,9 @@ using McgTgBotNet.DB.Entities;
 using McgTgBotNet.Models;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs;
+using ReportBot.Common.Extensions;
+using ReportBot.Common.Requests;
+using ReportBot.Common.Responses;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
 
@@ -39,7 +42,7 @@ public class ReportService : IReportService
 
         await _reportRepository.InsertAsync(entity);
 
-        return _mapper.Map<ReportDTO>(entity);        
+        return _mapper.Map<ReportDTO>(entity);
     }
 
     public async Task<List<ReportDTO>> GetReportsForUserAsync(long chatId)
@@ -51,6 +54,62 @@ public class ReportService : IReportService
             .Include(x => x.Project)
             .Where(x => x.UserId == user.Id)
             .ToListAsync();
+
+        return _mapper.Map<List<ReportDTO>>(reports);
+    }
+
+    public async Task<PageList<ReportDTO>> GetReportsAsync(FilterRequest filterRequest, PaginationRequest paginationRequest)
+    {
+        var query = _reportRepository
+            .Include(x => x.Project)
+            .Include(x => x.User)
+            .AsQueryable();
+
+        var reports = await FilterReportsAsync(query, filterRequest);
+
+        var result = reports.Pagination(paginationRequest.Page, paginationRequest.PageSize);
+
+        return result;
+    }
+
+    public async Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, PaginationRequest request)
+    {
+        var entity = await _reportRepository
+            .Include(x => x.Project)
+            .Include(x => x.User)
+            .Where(x => x.Project.Id == projectId)
+            .ToListAsync();
+
+        var reports = _mapper.Map<List<ReportDTO>>(entity);
+
+        var result = reports.Pagination(request.Page, request.PageSize);
+
+        return result;
+    }
+
+    private async Task<List<ReportDTO>> FilterReportsAsync(IQueryable<Report> query, FilterRequest request)
+    {
+        if (!string.IsNullOrEmpty(request.ProjectName))
+        {
+            query = query.Where(x => x.Project.Name == request.ProjectName);
+        }
+
+        if (request.FromDate != null)
+        {
+            query = query.Where(x => x.DateOfShift >= request.FromDate);
+        }
+
+        if (request.ToDate != null)
+        {
+            query = query.Where(x => x.DateOfShift <= request.ToDate);
+        }
+
+        if (!string.IsNullOrEmpty(request.UserName))
+        {
+            query = query.Where(x => x.UserName == request.UserName);
+        }
+
+        var reports = await query.ToListAsync();
 
         return _mapper.Map<List<ReportDTO>>(reports);
     }

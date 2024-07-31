@@ -61,8 +61,11 @@ namespace McgTgBotNet.Services
 
         public async Task ProcessTextAsync(Update update)
         {
-            var mainKeyboard = MainKeyboard.Create();
             var message = update.Message;
+            var userChat = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message!.Chat.Id);
+            var mainKeyboard = MainKeyboard.Create();
+            if (userChat != null)
+                mainKeyboard = MainKeyboard.Create(userChat);
 
             if (message!.Text!.ToLower().Contains("start"))
             {
@@ -82,6 +85,19 @@ namespace McgTgBotNet.Services
                          $"👋Hi, {user.FirstName} {user.LastName}! How can I help you?",
                          replyMarkup: mainKeyboard);
                 }
+            }
+
+            if (message!.Text!.ToLower().Contains("manager dashboard"))
+            {
+                var inlineKeyboard = new InlineKeyboardMarkup(new[]
+                {
+                    new[]
+                    {
+                        InlineKeyboardButton.WithUrl("Visit dashboard", "https://www.youtube.com/")
+                    }
+                });
+
+                await client.SendTextMessageAsync(message.Chat.Id, "📊 The Manager Dashboard is a dedicated panel designed for managers to efficiently manage and work with reports.", replyMarkup: inlineKeyboard);
             }
 
             if (message.Text.ToLower().Contains("profile"))

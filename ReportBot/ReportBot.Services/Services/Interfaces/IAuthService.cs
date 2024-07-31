@@ -1,5 +1,4 @@
-﻿
-using ReportBot.Common.Requests;
+﻿using ReportBot.Common.Requests;
 using ReportBot.Common.Responses;
 
 namespace ReportBot.Services.Services.Interfaces;

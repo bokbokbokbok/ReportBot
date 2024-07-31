@@ -1,16 +1,15 @@
 ﻿using FluentValidation;
 using ReportBot.Common.Requests;
 
-namespace ReportBot.Validators
+namespace ReportBot.Validators;
+
+public class SignInValidator : AbstractValidator<SignInRequest>
 {
-    public class SignInValidator : AbstractValidator<SignInRequest>
+    public SignInValidator()
     {
-        public SignInValidator()
-        {
-            RuleFor(x => x.Email)
-                .NotEmpty()
-                .EmailAddress()
-                .WithMessage("Your email is invalid");
-        }
+        RuleFor(x => x.Email)
+            .NotEmpty()
+            .EmailAddress()
+            .WithMessage("Your email is invalid");
     }
 }

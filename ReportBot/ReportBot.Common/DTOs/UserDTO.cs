@@ -1,20 +1,13 @@
-﻿using McgTgBotNet.Attributes;
+﻿namespace ReportBot.Common.DTOs;
 
-namespace McgTgBotNet.DTOs
+public class UserDTO
 {
-    public class UserDTO
-    {
-        [XMLProperty("id")]
-        public int Id { get; set; }
-        [XMLProperty("login")]
-        public string Login { get; set; } = string.Empty;
-        [XMLProperty("first_name")]
-        public string FirstName { get; set; } = string.Empty;
-        [XMLProperty("last_name")]
-        public string LastName { get; set; } = string.Empty;
-        [XMLProperty("email")]
-        public string Email { get; set; } = string.Empty;
-        [XMLProperty("api_token")]
-        public string ApiToken { get; set; } = string.Empty;
-    }
+    public int Id { get; set; }
+    public long ChatId { get; set; }
+    public int WorksnapsId { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public int ShiftTime { get; set; }
+    public string Role { get; set; } = string.Empty;
 }

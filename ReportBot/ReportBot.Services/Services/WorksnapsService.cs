@@ -9,7 +9,6 @@ using ReportBot.Services.Services.Interfaces;
 using ReportBot.DataBase.Repositories.Interfaces;
 using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
-using static System.Collections.Specialized.BitVector32;
 using ReportBot.Common.DTOs.Project;
 
 namespace McgTgBotNet.Services;
@@ -66,11 +65,11 @@ public class WorksnapsService : IWorksnapsService
 
         var doc = XDocument.Parse(content);
 
-        var data = new List<UserDTO>();
+        var data = new List<WorksnapsUserDTO>();
 
         foreach (var element in doc.Root!.Elements())
         {
-            var item = element.ParseXML<UserDTO>();
+            var item = element.ParseXML<WorksnapsUserDTO>();
 
             data.Add(item);
         }
@@ -83,7 +82,7 @@ public class WorksnapsService : IWorksnapsService
         return user.Id;
     }
 
-    public async Task<UserDTO> GetUserByWorksnapsId(int id)
+    public async Task<WorksnapsUserDTO> GetUserByWorksnapsId(int id)
     {
         var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users/{id}.xml");
         response.EnsureSuccessStatusCode();
@@ -91,7 +90,7 @@ public class WorksnapsService : IWorksnapsService
 
         var doc = XDocument.Parse(content);
 
-        var user = doc.Root!.ParseXML<UserDTO>();
+        var user = doc.Root!.ParseXML<WorksnapsUserDTO>();
 
         if (user == null)
             throw new ArgumentException($"No user with this id was found. Id: {id}");
