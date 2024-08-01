@@ -72,17 +72,17 @@ public class ReportService : IReportService
         return result;
     }
 
-    public async Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, PaginationRequest request)
+    public async Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest, PaginationRequest paginationRequest)
     {
-        var entity = await _reportRepository
+        var query = _reportRepository
             .Include(x => x.Project)
             .Include(x => x.User)
             .Where(x => x.Project.Id == projectId)
-            .ToListAsync();
+            .AsQueryable();
 
-        var reports = _mapper.Map<List<ReportDTO>>(entity);
+        var reports = await FilterReportsAsync(query, filterRequest);
 
-        var result = reports.Pagination(request.Page, request.PageSize);
+        var result = reports.Pagination(paginationRequest.Page, paginationRequest.PageSize);
 
         return result;
     }

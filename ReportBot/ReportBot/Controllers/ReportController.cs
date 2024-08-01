@@ -24,9 +24,9 @@ namespace ReportBot.Controllers
         }
 
         [HttpGet("{projectId}")]
-        public async Task<IActionResult> GetReportsForProject(int projectId, [FromQuery] PaginationRequest request)
+        public async Task<IActionResult> GetReportsForProject(int projectId, [FromQuery] FilterRequest filterRequest, [FromQuery] PaginationRequest paginationRequest)
         {
-            var reports = await _reportService.GetReportsForProjectAsync(projectId, request);
+            var reports = await _reportService.GetReportsForProjectAsync(projectId, filterRequest, paginationRequest);
 
             return Ok(reports);
         }

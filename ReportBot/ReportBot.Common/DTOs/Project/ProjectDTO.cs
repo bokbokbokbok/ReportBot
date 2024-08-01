@@ -12,4 +12,6 @@ public class ProjectDTO
     public string Description { get; set; } = string.Empty;
     [XMLProperty("status")]
     public string Status { get; set; } = string.Empty;
+
+    public List<UserDTO> Users { get; set; } = new();
 }

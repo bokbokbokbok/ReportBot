@@ -16,7 +16,8 @@ public class ExceptionFilter : IExceptionFilter
             InvalidCredentialsException => new UnauthorizedObjectResult(context.Exception.Message),
             IncorrectParametersException => new BadRequestObjectResult(context.Exception.Message),
             AlreadyExistsException => new BadRequestObjectResult(context.Exception.Message),
-            UnauthorizedException => new UnauthorizedObjectResult(context.Exception.Message)
+            UnauthorizedException => new UnauthorizedObjectResult(context.Exception.Message),
+            ForbiddenException => new UnauthorizedObjectResult(context.Exception.Message)
             {
                 StatusCode = (int)HttpStatusCode.Forbidden
             },

@@ -38,7 +38,7 @@ public class AuthService : IAuthService
             ?? throw new NotFoundException($"User with such id not found. Id: {userId}");
 
         if (user.Role != "manager")
-            throw new UnauthorizedException("You are not allowed to use admin dashboard");
+            throw new ForbiddenException("You are not allowed to use admin dashboard");
 
         var result = new AuthSuccessResponse(GenerateAccessToken(user));
 
