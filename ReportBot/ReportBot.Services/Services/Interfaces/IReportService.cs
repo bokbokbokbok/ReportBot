@@ -10,5 +10,7 @@ namespace ReportBot.Services.Services.Interfaces
         Task<PageList<ReportDTO>> GetReportsAsync(FilterRequest filterRequest, PaginationRequest paginationRequest);
         Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest, PaginationRequest paginationRequest);
         Task<List<ReportDTO>> GetReportsForUserAsync(long chatId);
+        Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync();
+        Task<SessionStatisticsResponse> GetSessionsStatiticsAsync();
     }
 }

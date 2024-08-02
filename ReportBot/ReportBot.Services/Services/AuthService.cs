@@ -32,10 +32,10 @@ public class AuthService : IAuthService
 
     public async Task<AuthSuccessResponse> SignIn(SignInRequest request)
     {
-        var userId = await _worksnapsService.GetUserId(request.Email);
+        var worksnapsUser = await _worksnapsService.GetUserAsync(request.Email);
 
-        var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == userId)
-            ?? throw new NotFoundException($"User with such id not found. Id: {userId}");
+        var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == worksnapsUser.Id)
+            ?? throw new NotFoundException($"User with such id not found. Id: {worksnapsUser.Id}");
 
         if (user.Role != "manager")
             throw new ForbiddenException("You are not allowed to use admin dashboard");

@@ -33,5 +33,14 @@ namespace ReportBot.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetProjectStatistics()
+        {
+            var userId = HttpContext.GetUserId();
+            var result = await _projectService.GetProjectStatistics(userId);
+
+            return Ok(result);
+        }
     }
 }

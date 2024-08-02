@@ -123,16 +123,16 @@ namespace McgTgBotNet.Services
 
                 Match match = Regex.Match(message.Text, pattern, RegexOptions.IgnoreCase);
 
-                var id = await _worksnapsService.GetUserId(match.Groups["email"].Value);
-                var role = await _worksnapsService.GetUserRoleAsync(id);
+                var worksnapsUser = await _worksnapsService.GetUserAsync(match.Groups["email"].Value);
+                var role = await _worksnapsService.GetUserRoleAsync(worksnapsUser.Id);
                 int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
                 var user = new DB.Entities.User
                 {
                     ChatId = message.Chat.Id,
-                    WorksnapsId = id,
-                    Username = message.From!.Username!,
-                    FirstName = message.From.FirstName,
-                    LastName = message.From.LastName!,
+                    WorksnapsId = worksnapsUser.Id,
+                    Username = worksnapsUser.Login,
+                    FirstName = worksnapsUser.FirstName,
+                    LastName = worksnapsUser.LastName!,
                     ShiftTime = shiftTime,
                     Role = role.ToLower()
                 };

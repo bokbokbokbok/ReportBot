@@ -10,6 +10,7 @@ using ReportBot.DataBase.Repositories.Interfaces;
 using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs.Project;
+using ReportBot.Common.Exceptions;
 
 namespace McgTgBotNet.Services;
 
@@ -33,6 +34,13 @@ public class WorksnapsService : IWorksnapsService
         _projectRepository = projectRepository;
     }
 
+    public async Task<List<SummaryReportDTO>> GetFinishedReportsAsync()
+    {
+        var data = await GetSummaryReportsAsync();
+
+        return await IsSessionFinishedAsync(data);
+    }
+
     public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync()
     {
         var today = DateTime.Today.Date.ToString("yyyy-MM-dd");
@@ -51,10 +59,10 @@ public class WorksnapsService : IWorksnapsService
             data.Add(item);
         }
 
-        return await IsSessionFinishedAsync(data);
+        return data;
     }
 
-    public async Task<int> GetUserId(string email)
+    public async Task<WorksnapsUserDTO> GetUserAsync(string email)
     {
         if (Regex.IsMatch(email, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$") == false)
             throw new ArgumentException("Email is not valid");
@@ -79,7 +87,7 @@ public class WorksnapsService : IWorksnapsService
         if (user == null)
             throw new ArgumentException($"😔 No user with this email was found. Email: {email}");
 
-        return user.Id;
+        return user;
     }
 
     public async Task<WorksnapsUserDTO> GetUserByWorksnapsId(int id)
@@ -93,9 +101,28 @@ public class WorksnapsService : IWorksnapsService
         var user = doc.Root!.ParseXML<WorksnapsUserDTO>();
 
         if (user == null)
-            throw new ArgumentException($"No user with this id was found. Id: {id}");
+            throw new NotFoundException($"No user with this id was found. Id: {id}");
 
         return user;
+    }
+
+    public async Task<List<SummaryReportDTO>> GetSummaryReportsForProjectAsync(int projectId, DateTime from, DateTime to)
+    {
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/summary_reports?from_date={from.Date.ToString("yyyy-MM-dd")}&to_date={to.Date.ToString("yyyy-MM-dd")}&name=manager_report&project_ids={projectId}");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<SummaryReportDTO>();
+        foreach (var element in doc.Root!.Elements())
+        {
+            var item = element.ParseXML<SummaryReportDTO>();
+
+            data.Add(item);
+        }
+
+        return data;
     }
 
     public async Task<bool> AddProjectToUser(int userId)
@@ -165,7 +192,7 @@ public class WorksnapsService : IWorksnapsService
             projects.Add(item);
         }
 
-        var assignmentsResponse = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/{projects.First().Id}/user_assignments.xml");
+        var assignmentsResponse = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects/{projects.First().WorksnapsId}/user_assignments.xml");
         assignmentsResponse.EnsureSuccessStatusCode();
         var assignmentsContent = await assignmentsResponse.Content.ReadAsStringAsync();
 

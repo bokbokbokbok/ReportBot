@@ -8,7 +8,7 @@ namespace McgTgBotNet.DTOs
         [XMLProperty("user_id")]
         public int UserId { get; set; }
         [XMLProperty("user_name")]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
         [XMLProperty("project_id")]
         public int ProjectId { get; set; }
         [XMLProperty("date")]

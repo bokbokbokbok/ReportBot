@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ReportBot.Common.Requests;
 using ReportBot.Services.Services.Interfaces;
 
@@ -6,6 +7,7 @@ namespace ReportBot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReportController : ControllerBase
     {
         private readonly IReportService _reportService;
@@ -18,17 +20,33 @@ namespace ReportBot.Controllers
         [HttpGet("[action]")]
         public async Task<IActionResult> GetReports([FromQuery] FilterRequest filterRequest, [FromQuery] PaginationRequest paginationRequest)
         {
-            var reports = await _reportService.GetReportsAsync(filterRequest, paginationRequest);
+            var result = await _reportService.GetReportsAsync(filterRequest, paginationRequest);
 
-            return Ok(reports);
+            return Ok(result);
         }
 
         [HttpGet("{projectId}")]
         public async Task<IActionResult> GetReportsForProject(int projectId, [FromQuery] FilterRequest filterRequest, [FromQuery] PaginationRequest paginationRequest)
         {
-            var reports = await _reportService.GetReportsForProjectAsync(projectId, filterRequest, paginationRequest);
+            var result = await _reportService.GetReportsForProjectAsync(projectId, filterRequest, paginationRequest);
 
-            return Ok(reports);
+            return Ok(result);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetSessionsStatitics()
+        {
+            var result = await _reportService.GetSessionsStatiticsAsync();
+
+            return Ok(result);
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetReportsStatistics()
+        {
+            var result = await _reportService.GetReportsStatisticsAsync();
+
+            return Ok(result);
         }
     }
 }

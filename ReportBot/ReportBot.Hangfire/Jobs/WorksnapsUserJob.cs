@@ -25,7 +25,7 @@ namespace Hangfire.Jobs
 
         public async Task Run(CancellationToken cancellationToken = default)
         {
-             var userFinished = await _worksnapsService.GetSummaryReportsAsync();
+             var userFinished = await _worksnapsService.GetFinishedReportsAsync();
 
             foreach (var item in userFinished)
             {

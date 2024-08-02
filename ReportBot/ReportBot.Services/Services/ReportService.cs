@@ -15,16 +15,19 @@ public class ReportService : IReportService
 {
     private readonly IRepository<Report> _reportRepository;
     private readonly IRepository<User> _userRepository;
+    private readonly IWorksnapsService _worksnapsService;
     private readonly IMapper _mapper;
 
     public ReportService(
         IRepository<Report> reportRepository,
-        IMapper mapper,
-        IRepository<User> userRepository)
+        IRepository<User> userRepository,
+        IWorksnapsService worksnapsService,
+        IMapper mapper)
     {
         _reportRepository = reportRepository;
-        _mapper = mapper;
         _userRepository = userRepository;
+        _worksnapsService = worksnapsService;
+        _mapper = mapper;
     }
 
     public async Task<ReportDTO> AddReportAsync(CreateReportDTO report)
@@ -83,6 +86,74 @@ public class ReportService : IReportService
         var reports = await FilterReportsAsync(query, filterRequest);
 
         var result = reports.Pagination(paginationRequest.Page, paginationRequest.PageSize);
+
+        return result;
+    }
+
+    public async Task<SessionStatisticsResponse> GetSessionsStatiticsAsync()
+    {
+        var totalSessions = await _worksnapsService.GetSummaryReportsAsync();
+
+        var closeSessions = await _worksnapsService.GetFinishedReportsAsync();
+
+        var reportsToday = await _reportRepository
+            .Where(x => x.DateOfShift.Date == DateTime.Now.Date)
+            .ToListAsync();
+
+        var result = new SessionStatisticsResponse
+        {
+            TotalSessions = totalSessions.Count,
+            ClosedSessions = closeSessions.Count,
+            OpenedSessions = totalSessions.Count - closeSessions.Count,
+            EmployeesCount = totalSessions.Select(x => x.UserId).Distinct().Count(),
+            ProjectsCount = totalSessions.Select(x => x.ProjectId).Distinct().Count(),
+            ReportsCount = reportsToday.Count
+        };
+
+        return result;
+    }
+
+    public async Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync()
+    {
+        var daylyReports = await _reportRepository
+            .Include(x => x.Project)
+            .Where(x => x.DateOfShift.Date == DateTime.Now.Date)
+            .ToListAsync();
+
+        var dailyStatistics = new ReportStatisticsResponse
+        {
+            TotalProjects = daylyReports.Select(x => x.Project).Distinct().Count(),
+            TotalReportsMinutes = daylyReports.Sum(x => x.TimeOfShift)
+        };
+
+        var monthlyReports = await _reportRepository
+            .Include(x => x.Project)
+            .Where(x => x.DateOfShift.Month == DateTime.Now.Month)
+            .ToListAsync();
+
+        var monthlyStatistics = new ReportStatisticsResponse
+        {
+            TotalProjects = monthlyReports.Select(x => x.Project).Distinct().Count(),
+            TotalReportsMinutes = monthlyReports.Sum(x => x.TimeOfShift)
+        };
+
+        var yearlyReports = await _reportRepository
+            .Include(x => x.Project)
+            .Where(x => x.DateOfShift.Year == DateTime.Now.Year)
+            .ToListAsync();
+
+        var yearlyStatistics = new ReportStatisticsResponse
+        {
+            TotalProjects = yearlyReports.Select(x => x.Project).Distinct().Count(),
+            TotalReportsMinutes = yearlyReports.Sum(x => x.TimeOfShift)
+        };
+
+        var result = new Dictionary<string, ReportStatisticsResponse>
+        {
+            { "daily", dailyStatistics },
+            { "monthly", monthlyStatistics },
+            { "yearly", yearlyStatistics }
+        };
 
         return result;
     }
