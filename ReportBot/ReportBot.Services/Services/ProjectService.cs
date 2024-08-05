@@ -14,11 +14,14 @@ public class ProjectService : IProjectService
     private readonly IWorksnapsService _worksnapsService;
     private readonly IMapper _mapper;
 
-    public ProjectService(IRepository<Project> projectRepository, IMapper mapper, IWorksnapsService worksnapsService)
+    public ProjectService(
+        IRepository<Project> projectRepository,
+        IWorksnapsService worksnapsService,
+        IMapper mapper)
     {
         _projectRepository = projectRepository;
-        _mapper = mapper;
         _worksnapsService = worksnapsService;
+        _mapper = mapper;
     }
 
     public async Task<List<ProjectDTO>> GetProjectsAsync(int userId)

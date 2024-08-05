@@ -29,9 +29,9 @@ public class WorksnapsService : IWorksnapsService
     {
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(ConfigExtension.GetConfiguration("Worksnaps:ApiKey"))));
-        _mapper = mapper;
         _userRepository = userRepository;
         _projectRepository = projectRepository;
+        _mapper = mapper;
     }
 
     public async Task<List<SummaryReportDTO>> GetFinishedReportsAsync()

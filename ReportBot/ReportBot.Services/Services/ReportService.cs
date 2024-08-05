@@ -115,6 +115,14 @@ public class ReportService : IReportService
 
     public async Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync()
     {
+        DateTime today = DateTime.Today;
+        DateTime startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
+
+        if (today.DayOfWeek == DayOfWeek.Sunday)
+            startOfWeek = today.AddDays(-6);
+
+        DateTime endOfWeek = startOfWeek.AddDays(6);
+
         var daylyReports = await _reportRepository
             .Include(x => x.Project)
             .Where(x => x.DateOfShift.Date == DateTime.Now.Date)
@@ -124,6 +132,17 @@ public class ReportService : IReportService
         {
             TotalProjects = daylyReports.Select(x => x.Project).Distinct().Count(),
             TotalReportsMinutes = daylyReports.Sum(x => x.TimeOfShift)
+        };
+
+        var weeklyReports = await _reportRepository
+            .Include(x => x.Project)
+            .Where(x => x.DateOfShift.Date >= startOfWeek && x.DateOfShift.Date <= endOfWeek)
+            .ToListAsync();
+
+        var weeklyStatistics = new ReportStatisticsResponse
+        {
+            TotalProjects = weeklyReports.Select(x => x.Project).Distinct().Count(),
+            TotalReportsMinutes = weeklyReports.Sum(x => x.TimeOfShift)
         };
 
         var monthlyReports = await _reportRepository
@@ -137,22 +156,12 @@ public class ReportService : IReportService
             TotalReportsMinutes = monthlyReports.Sum(x => x.TimeOfShift)
         };
 
-        var yearlyReports = await _reportRepository
-            .Include(x => x.Project)
-            .Where(x => x.DateOfShift.Year == DateTime.Now.Year)
-            .ToListAsync();
-
-        var yearlyStatistics = new ReportStatisticsResponse
-        {
-            TotalProjects = yearlyReports.Select(x => x.Project).Distinct().Count(),
-            TotalReportsMinutes = yearlyReports.Sum(x => x.TimeOfShift)
-        };
 
         var result = new Dictionary<string, ReportStatisticsResponse>
         {
             { "daily", dailyStatistics },
-            { "monthly", monthlyStatistics },
-            { "yearly", yearlyStatistics }
+            { "weekly", weeklyStatistics },
+            { "monthly", monthlyStatistics }
         };
 
         return result;
