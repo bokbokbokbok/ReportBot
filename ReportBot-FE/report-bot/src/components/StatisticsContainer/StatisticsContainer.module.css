@@ -1,0 +1,164 @@
+.statisticsContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.topStatistics {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10%;
+}
+
+.reportStatistics {
+    display: flex;
+    flex-direction: column;
+    width: 530px;
+    padding-bottom: 10px;
+    height: 100%;
+    background-color: #D9D9D9;
+    border-radius: 10px;
+    gap: 10px;
+}
+
+.totalSessionBox {
+    display: flex;
+    flex-direction: column;
+    width: 90%;
+    height: 90px;
+    padding: 10px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+}
+
+.reportStatisticsBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.secondStatistics {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 90%;
+}
+
+.secondStatisticsBox {
+    width: 45%;
+    height: 130px;
+    padding: 10px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.bottomReportStatistics {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 13px;
+    width: 100%;
+    background-color: #D9D9D9;
+}
+
+.bottomReportStatisticsBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 28%;
+    height: 110px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+}
+
+.projectsContainer {
+    display: flex;
+    flex-direction: column;
+    width: 530px;
+    height: 100%;
+    gap: 10px;
+    background-color: #D9D9D9;
+    border-radius: 10px;
+}
+
+.projectsBox {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.projectsList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 300px;
+    gap: 10px;
+    overflow-y: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.projectsList::-webkit-scrollbar {
+    display: none;
+}
+
+.projectBox {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 430px;
+    height: 70px;
+    padding: 10px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+    align-items: center;
+    padding: 15px;
+}
+
+.projectTitle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 70%;
+}
+
+.bottomStatistics {
+    display: flex;
+    flex-direction: column;
+    width: 1060px;
+    height: 170px;
+    border-radius: 10px;
+    background-color: #D9D9D9;
+    gap: 10px;
+}
+
+.bottomStatisticsContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    border-radius: 10px;
+}
+
+.bottomStatisticsBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 320px;
+    height: 110px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 10px;
+}

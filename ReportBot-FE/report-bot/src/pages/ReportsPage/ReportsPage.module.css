@@ -1,0 +1,50 @@
+.reportsPage {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 85%;
+    height: 100vh;
+    padding: 20px;
+    gap: 20px;
+}
+
+.reportsContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    gap: 20px;
+}
+
+.reportsBox {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-y: auto;
+    max-height: 530px;
+    gap: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.reportsBox::-webkit-scrollbar {
+    display: none;
+}
+
+.reportCart {
+    width: 490px;
+    padding: 10px 0;
+    background-color: #D9D9D9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    gap: 30px;
+}

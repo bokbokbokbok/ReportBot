@@ -1,0 +1,42 @@
+.menuBox {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    width: 15%;
+    height: auto;
+    background-color: #DEDEDE;
+}
+
+.buttonBox{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.button{
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 24px 0px 0px 24px;
+    gap: 10px;
+}
+
+.button:hover{
+    background-color: #E1F3E0;
+}
+
+.settingsBox{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 7%;
+    gap: 10px;
+}
+
+.line{
+    width: 90%;
+    height: 1px;
+    background-color: #A3A3A3;
+    align-self: center;
+}
