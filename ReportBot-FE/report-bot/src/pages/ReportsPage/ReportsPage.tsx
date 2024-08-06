@@ -14,13 +14,11 @@ const ReportsPage = () => {
     "Total Time Saved",
   ];
 
-  // Initialize an array of booleans to track expanded state for each item
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
     new Array(statistics.length).fill(false)
   );
 
   const handleToggle = (index: number) => {
-    // Toggle the specific index's expanded state
     setExpandedStates((prevStates) =>
       prevStates.map((state, i) => (i === index ? !state : state))
     );
@@ -39,8 +37,9 @@ const ReportsPage = () => {
                 key={index}
                 className={styles.reportCart}
                 sx={{
-                  maxHeight: expandedStates[index] ? "300px" : "250px", // Use maxHeight for smoother transition
-                  transition: "max-height 0.5s ease-in-out", // Smooth transition for max-height
+                    height: expandedStates[index] ? "300px" : "250px", 
+                  maxHeight: expandedStates[index] ? "300px" : "250px", 
+                  transition: "max-height 0.5s ease-in-out", 
                   overflow: "hidden",
                 }}
               >
@@ -81,21 +80,16 @@ const ReportsPage = () => {
                       display: expandedStates[index] ? "block" : "-webkit-box",
                       WebkitLineClamp: expandedStates[index] ? "none" : 7,
                       WebkitBoxOrient: "vertical",
-                      transition: "all 0.5s ease-in-out", // Smooth transition
+                      transition: "all 0.5s ease-in-out",
                       overflowY: expandedStates[index] ? "auto" : "hidden",
                     '&::-webkit-scrollbar': expandedStates[index]
-                      ? { display: "none" } // Hides the scrollbar in WebKit browsers when expanded
+                      ? { display: "none" }
                       : {},
-                    "-ms-overflow-style": expandedStates[index] ? "none" : "auto", // Hides scrollbar in IE and Edge when expanded
+                    "-ms-overflow-style": expandedStates[index] ? "none" : "auto",
                     scrollbarWidth: expandedStates[index] ? "none" : "auto", 
                     }}
                   >
-                    Працював sdf dfssss dfsdfsd sdfffffffsdf sdfsdfsfsf
-                    sdfsdfsdfsd sdfsdfsdf sdfsdfsdfнад проектами. Зробив щоб
-                    для конкретного юзера проекти підтягувались з worksnaps.
-                    Також зробив зв'язки між проектами та юзерами. dsfdf dfsdfds
-                    dsfsdfd sdfsdfd sdfsdfds Працював sdf dfssss dfsdfsd
-                    sdfffffffsdf sdfsdfsfsf sdfsdfsdfsd sdfsdfsdf sdfsdfsdfнад
+                
                     проектами. Зробив щоб для конкретного юзера проекти
                     підтягувались з worksnaps. Також зробив зв'язки між
                     проектами та юзерами. dsfdf dfsdfds dsfsdfd sdfsdfd sdfsdfds
