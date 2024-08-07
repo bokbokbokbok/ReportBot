@@ -3,8 +3,8 @@ import Api from "./repository/Api";
 import UserResponse from "./models/response/UserResponse";
 
 const User = {
-    getAll: async (): Promise<ApiResponse<UserResponse[]>> => {
-        const response = await Api.get<UserResponse[]>("/user");
+    getAll: async (sorting: number): Promise<ApiResponse<UserResponse[]>> => {
+        const response = await Api.get<UserResponse[]>(`/user?sorting=${sorting}`);
 
         return response;
     }

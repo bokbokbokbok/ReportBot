@@ -13,7 +13,7 @@ function splitDateTime(dateTime: Date) {
   const dateString = new Date(dateTime).toLocaleDateString("en", {
     year: "numeric",
     day: "2-digit",
-    month: "long",
+    month: "short",
   });
 
   return dateString;
@@ -33,8 +33,6 @@ const ReportsPage = () => {
   };
 
   const handleToggle = (index: number) => {
-    console.log("Button clicked", index);
-    console.log(expandedStates); // Debugging
     setExpandedStates((prevStates) =>
       prevStates.map((state, i) => (i === index ? !state : state))
     );

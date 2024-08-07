@@ -1,0 +1,14 @@
+.homePage {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+}
+
+.content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 85%;
+    height: 100vh;
+}

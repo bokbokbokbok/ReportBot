@@ -6,6 +6,7 @@ interface UserResponse {
     firstName: string;
     lastName: string;
     shiftTime: number;
+    email: string;
     role: string;
 };
 

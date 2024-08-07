@@ -46,7 +46,7 @@ const FilterPanel: React.FC<FilterProps> = ({ getFilterReports }) => {
             }
         }
         const getUsers = async () => {
-            const response = await User.getAll();
+            const response = await User.getAll(0);
             if (response.success) {
                 setUsers(response.data ?? []);
             }

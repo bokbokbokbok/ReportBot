@@ -5,6 +5,8 @@ import { SnackbarProvider } from 'notistack';
 import SignInPage from './pages/SignInPage/SignInPage';
 import HomePage from './pages/HomePage/HomePage';
 import ReportsPage from './pages/ReportsPage/ReportsPage';
+import UserPage from './pages/UserPage/UserPage';
+import ProjectsPage from './pages/ProjectsPage/ProjectsPage';
 
 const theme = createTheme({
   palette: {
@@ -24,6 +26,8 @@ function App() {
             <Routes>
               <Route path="/home" element={<HomePage/>} />
               <Route path="/reports" element={<ReportsPage/>} />
+              <Route path="/users" element={<UserPage />} />
+              <Route path="/projects" element={<ProjectsPage />} />
               <Route path="/" element={<SignInPage />} />
               <Route path="*" element={<div>Not Found Page</div>} />
             </Routes>
