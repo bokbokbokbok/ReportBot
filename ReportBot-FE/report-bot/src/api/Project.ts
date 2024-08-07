@@ -4,7 +4,7 @@ import Api from "./repository/Api";
 
 const Project = {
     getAll: async (): Promise<ApiResponse<ProjectResponse[]>> => {
-        const response = await Api.get<ProjectResponse[]>("/projects");
+        const response = await Api.get<ProjectResponse[]>("/project");
 
         return response;
     }

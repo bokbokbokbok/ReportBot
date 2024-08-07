@@ -18,9 +18,9 @@ namespace ReportBot.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<IActionResult> GetReports([FromQuery] FilterRequest filterRequest, [FromQuery] PaginationRequest paginationRequest)
+        public async Task<IActionResult> GetReports([FromQuery] FilterRequest filterRequest)
         {
-            var result = await _reportService.GetReportsAsync(filterRequest, paginationRequest);
+            var result = await _reportService.GetReportsAsync(filterRequest);
 
             return Ok(result);
         }

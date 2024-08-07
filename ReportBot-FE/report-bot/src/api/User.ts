@@ -4,7 +4,7 @@ import UserResponse from "./models/response/UserResponse";
 
 const User = {
     getAll: async (): Promise<ApiResponse<UserResponse[]>> => {
-        const response = await Api.get<UserResponse[]>("/users");
+        const response = await Api.get<UserResponse[]>("/user");
 
         return response;
     }

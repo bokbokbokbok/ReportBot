@@ -13,12 +13,10 @@ axiosInstance.interceptors.response.use(
     },
     async (error) => {
         const navigate = useNavigate();
+        console.log('Silent refresh failedsdasda');
         if (error.response.status === 401) {
-            try {
-               
-            } catch (refreshError) {
                 console.log('Silent refresh failed');
-            }
+            
         }
         return Promise.reject(error);
     }
