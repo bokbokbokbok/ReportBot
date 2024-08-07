@@ -12,11 +12,9 @@ axiosInstance.interceptors.response.use(
         return response;
     },
     async (error) => {
-        const navigate = useNavigate();
-        console.log('Silent refresh failedsdasda');
         if (error.response.status === 401) {
-                console.log('Silent refresh failed');
-            
+            localStorage.removeItem('accessToken');
+            window.location.href = '/';
         }
         return Promise.reject(error);
     }
