@@ -29,9 +29,12 @@ const ReportsPage = () => {
   const getReports = async (request: FilterRequest) => {
     const response = await Reports.getAll(request);
     setReports(response.data ?? []);
+    setExpandedStates(new Array(response.data?.length ?? 0).fill(false));
   };
 
   const handleToggle = (index: number) => {
+    console.log("Button clicked", index);
+    console.log(expandedStates); // Debugging
     setExpandedStates((prevStates) =>
       prevStates.map((state, i) => (i === index ? !state : state))
     );
@@ -44,43 +47,43 @@ const ReportsPage = () => {
         <FilterPanel getFilterReports={getReports} />
         <Box className={styles.reportsContainer}>
           <Box className={styles.reportsBox}>
-            {reports.length === 0 ? 
-            (
-              <Box sx={{
-                width: '100%',
-                display: 'flex',
-                paddingTop: '30px',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '10px',
-            }}>
-                <Box component='img' src={notFound} sx={{
+            {reports.length === 0 ?
+              (
+                <Box sx={{
+                  width: '100%',
+                  display: 'flex',
+                  paddingTop: '30px',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}>
+                  <Box component='img' src={notFound} sx={{
                     width: '300px',
                     height: 'auto',
                     objectFit: 'cover',
                     objectPosition: 'center',
-                }} />
-                <Box sx={{
+                  }} />
+                  <Box sx={{
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
-                }}>
+                  }}>
 
                     <Typography sx={{
-                        fontWeight: 'bold',
-                        fontSize: '28px',
+                      fontWeight: 'bold',
+                      fontSize: '28px',
                     }}>No reports found</Typography>
                     <Typography sx={{
-                        textAlign: 'center',
-                        width: '270px',
-                        fontWeight: 'bold',
-                        fontSize: '13px',
+                      textAlign: 'center',
+                      width: '270px',
+                      fontWeight: 'bold',
+                      fontSize: '13px',
                     }}>Sorry, but no report was found for these filters.</Typography>
+                  </Box>
                 </Box>
-            </Box>
-            )
+              )
               : (reports.map((report, index) => (
                 <Box
                   key={index}
@@ -115,9 +118,12 @@ const ReportsPage = () => {
                       alignItems: "center",
                       width: "60%",
                       backgroundColor: "#F5F5F5",
+                      maxHeight: expandedStates[index] ? "280px" : "90%",
                       height: expandedStates[index] ? "280px" : "90%",
                       borderRadius: "10px",
                       padding: "10px",
+                      transition: "max-height 0.5s ease-in-out",
+                      overflow: "hidden",
                     }}
                   >
                     <Typography
@@ -129,7 +135,6 @@ const ReportsPage = () => {
                         display: expandedStates[index] ? "block" : "-webkit-box",
                         WebkitLineClamp: expandedStates[index] ? "none" : 7,
                         WebkitBoxOrient: "vertical",
-                        transition: "all 0.5s ease-in-out",
                         overflowY: expandedStates[index] ? "auto" : "hidden",
                         '&::-webkit-scrollbar': expandedStates[index]
                           ? { display: "none" }
@@ -138,7 +143,7 @@ const ReportsPage = () => {
                         scrollbarWidth: expandedStates[index] ? "none" : "auto",
                       }}
                     >
-                      {report.message}
+                      {report.message} sdfdfds dsff dsfsf sdfsdfd dsfsdfd sdfdfsd sfddf sdfsdf
                     </Typography>
 
                     <Button
