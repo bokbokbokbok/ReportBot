@@ -15,9 +15,10 @@ import Reports from "../../api/Reports";
 
 interface FilterProps {
     getFilterReports: (request: FilterRequest) => Promise<void>;
+    projectName: string | null;
 }
 
-const FilterPanel: React.FC<FilterProps> = ({ getFilterReports }) => {
+const FilterPanel: React.FC<FilterProps> = ({ getFilterReports, projectName }) => {
     const [fromDate, setFromDate] = useState<Dayjs | null>(null);
     const [toDate, setToDate] = useState<Dayjs | null>(null);
     const [selectedProject, setSelectedProject] = useState<string>('1');
@@ -93,6 +94,7 @@ const FilterPanel: React.FC<FilterProps> = ({ getFilterReports }) => {
                         },
                     }}
                 />
+                {projectName != null ? null : (
                 <TextField
                     id="outlined-select-currency"
                     select
@@ -115,6 +117,7 @@ const FilterPanel: React.FC<FilterProps> = ({ getFilterReports }) => {
                         </MenuItem>
                     ))}
                 </TextField>
+                )}
                 <TextField
                     id="outlined-select-currency"
                     select

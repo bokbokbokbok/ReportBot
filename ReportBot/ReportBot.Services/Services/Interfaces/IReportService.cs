@@ -8,7 +8,7 @@ namespace ReportBot.Services.Services.Interfaces
     {
         Task<ReportDTO> AddReportAsync(CreateReportDTO report);
         Task<List<ReportDTO>> GetReportsAsync(FilterRequest filterRequest);
-        Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest, PaginationRequest paginationRequest);
+        Task<List<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest);
         Task<List<ReportDTO>> GetReportsForUserAsync(long chatId);
         Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync();
         Task<SessionStatisticsResponse> GetSessionsStatiticsAsync();

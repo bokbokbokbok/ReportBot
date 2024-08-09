@@ -73,7 +73,7 @@ public class ReportService : IReportService
         return reports;
     }
 
-    public async Task<PageList<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest, PaginationRequest paginationRequest)
+    public async Task<List<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest)
     {
         var query = _reportRepository
             .Include(x => x.Project)
@@ -83,9 +83,7 @@ public class ReportService : IReportService
 
         var reports = await FilterReportsAsync(query, filterRequest);
 
-        var result = reports.Pagination(paginationRequest.Page, paginationRequest.PageSize);
-
-        return result;
+        return reports;
     }
 
     public async Task<SessionStatisticsResponse> GetSessionsStatiticsAsync()

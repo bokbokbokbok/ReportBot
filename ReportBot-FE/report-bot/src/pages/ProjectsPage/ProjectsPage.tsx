@@ -123,7 +123,6 @@ const ProjectsPage = () => {
                 </Button>
               </Box>
             </div>
-
           </Box>
         </Box>
       </Box>

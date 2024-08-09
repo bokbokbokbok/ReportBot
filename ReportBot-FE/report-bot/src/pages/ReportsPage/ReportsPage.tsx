@@ -42,7 +42,7 @@ const ReportsPage = () => {
     <Box className={styles.reportsPage}>
       <Menu activeView="reports" />
       <Box className={styles.content}>
-        <FilterPanel getFilterReports={getReports} />
+        <FilterPanel getFilterReports={getReports} projectName={null}/>
         <Box className={styles.reportsContainer}>
           <Box className={styles.reportsBox}>
             {reports.length === 0 ?

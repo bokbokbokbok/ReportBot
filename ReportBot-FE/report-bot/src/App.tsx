@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage/HomePage';
 import ReportsPage from './pages/ReportsPage/ReportsPage';
 import UserPage from './pages/UserPage/UserPage';
 import ProjectsPage from './pages/ProjectsPage/ProjectsPage';
+import ProjectPage from './pages/ProjectPage/ProjectPage';
 
 const theme = createTheme({
   palette: {
@@ -28,6 +29,7 @@ function App() {
               <Route path="/reports" element={<ReportsPage/>} />
               <Route path="/users" element={<UserPage />} />
               <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/project/:id" element={<ProjectPage />} />
               <Route path="/" element={<SignInPage />} />
               <Route path="*" element={<div>Not Found Page</div>} />
             </Routes>
