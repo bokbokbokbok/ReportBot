@@ -38,6 +38,16 @@
     display: none;
 }
 
+.notFoundBox {
+    width: 100%;
+    display: flex;
+    padding-top: 30px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 .reportCart {
     width: 490px;
     padding: 10px 0;
@@ -47,4 +57,13 @@
     align-items: center;
     border-radius: 15px;
     gap: 30px;
+}
+
+.fieldBox {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 25%;
+    gap: 10px;
 }

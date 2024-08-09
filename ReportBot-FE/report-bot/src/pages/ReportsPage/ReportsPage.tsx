@@ -7,7 +7,6 @@ import { useState } from "react";
 import FilterRequest from "../../api/models/request/FilterRequest";
 import Reports from "../../api/Reports";
 import ReportResponse from "../../api/models/response/ReportResponse";
-import notFound from "../../img/notFound.png";
 
 function splitDateTime(dateTime: Date) {
   const dateString = new Date(dateTime).toLocaleDateString("en", {
@@ -42,33 +41,12 @@ const ReportsPage = () => {
     <Box className={styles.reportsPage}>
       <Menu activeView="reports" />
       <Box className={styles.content}>
-        <FilterPanel getFilterReports={getReports} projectName={null}/>
+        <FilterPanel getFilterReports={getReports} projectName={null} />
         <Box className={styles.reportsContainer}>
           <Box className={styles.reportsBox}>
             {reports.length === 0 ?
               (
-                <Box sx={{
-                  width: '100%',
-                  display: 'flex',
-                  paddingTop: '30px',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  gap: '10px',
-                }}>
-                  <Box component='img' src={notFound} sx={{
-                    width: '300px',
-                    height: 'auto',
-                    objectFit: 'cover',
-                    objectPosition: 'center',
-                  }} />
-                  <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}>
-
+                <Box className={styles.notFoundBox}>
                     <Typography sx={{
                       fontWeight: 'bold',
                       fontSize: '28px',
@@ -79,7 +57,6 @@ const ReportsPage = () => {
                       fontWeight: 'bold',
                       fontSize: '13px',
                     }}>Sorry, but no report was found for these filters.</Typography>
-                  </Box>
                 </Box>
               )
               : (reports.map((report, index) => (
@@ -93,16 +70,7 @@ const ReportsPage = () => {
                     overflow: "hidden",
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      width: "25%",
-                      gap: "10px",
-                    }}
-                  >
+                  <Box className={styles.fieldBox}>
                     <Field label="Project" content={report.project.name} />
                     <Field label="User" content={report.userName} />
                     <Field label="Date" content={splitDateTime(report.dateOfShift)} />

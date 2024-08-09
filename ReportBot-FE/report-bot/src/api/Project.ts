@@ -7,6 +7,11 @@ const Project = {
         const response = await Api.get<ProjectResponse[]>("/project");
 
         return response;
+    },
+    getById: async (id: string): Promise<ApiResponse<ProjectResponse>> => {
+        const response = await Api.get<ProjectResponse>(`/project/${id}`);
+
+        return response;
     }
 };
 

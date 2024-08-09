@@ -53,7 +53,6 @@
     align-items: center;
     height: 25px;
     width: 110px;
-    background-color: #A7FEA3;
     border-radius: 20px;
 }
 
@@ -132,6 +131,16 @@
 
 .reportList::-webkit-scrollbar {
     display: none;
+}
+
+.notFoundBox {
+    width: 100%;
+    display: flex;
+    padding-top: 30px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 .reportCard {
