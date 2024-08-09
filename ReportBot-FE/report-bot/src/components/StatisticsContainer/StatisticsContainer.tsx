@@ -1,4 +1,4 @@
-import { Box, Button, Skeleton, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Skeleton, Typography } from "@mui/material";
 import styles from "./StatisticsContainer.module.css";
 import { useEffect, useState } from "react";
 import ProjectStatisticsResponse from "../../api/models/response/ProjectStatisticsResponse";
@@ -45,6 +45,13 @@ const StatisticsContainer = () => {
     }, []);
 
     return (
+        <>
+        {loading ? (
+            <Box className={styles.statisticsContainer}>
+            <CircularProgress />
+            </Box>
+        )
+        : (
         <Box className={styles.statisticsContainer}>
             <Box className={styles.topStatistics}>
                 <Box className={styles.reportStatistics}>
@@ -170,6 +177,8 @@ const StatisticsContainer = () => {
                 </Box>
             </Box>
         </Box>
+                    )}
+                    </>
     );
 };
 
