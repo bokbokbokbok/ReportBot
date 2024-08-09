@@ -7,7 +7,7 @@ public static class HttpContextExtension
 {
     public static int GetUserId(this HttpContext context)
     {
-        var claim = context.User.Claims.FirstOrDefault(c => c.Type == "id");
+        var claim = context.User.Claims.FirstOrDefault(c => c.Type == "worksnapsId");
 
         if (claim == null)
             throw new UnauthorizedException("Unauthorized");

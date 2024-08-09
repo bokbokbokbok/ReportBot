@@ -26,13 +26,23 @@ public class ProjectService : IProjectService
 
     public async Task<List<ProjectDTO>> GetProjectsAsync(int userId)
     {
-        var query = _projectRepository
-            .Include(x => x.Users)
-            .Where(p => p.Users.Any(u => u.Id == userId));
-        
-        var result = _mapper.Map<List<ProjectDTO>>(await query.ToListAsync());
+        var worksnapsProjects = await _worksnapsService.GetWorksnapsProjectsAsync(userId);
 
-        return result;
+        var projects = new List<Project>();
+
+        foreach (var project in worksnapsProjects)
+        {
+            var item = await _projectRepository
+                .Include(x => x.Users)
+                .FirstOrDefaultAsync(x => x.WorksnapsId == project.WorksnapsId);
+
+            if (item == null)
+                continue;
+
+            projects.Add(item);
+        }
+
+        return _mapper.Map<List<ProjectDTO>>(projects);
     }
 
     public async Task<ProjectDTO> GetProjectByIdAsync(int id)
@@ -57,14 +67,11 @@ public class ProjectService : IProjectService
 
         DateTime endOfWeek = startOfWeek.AddDays(6);
 
-        var query = _projectRepository
-            .Include(x => x.Users)
-            .Include(x => x.Reports)
-            .Where(p => p.Users.Any(u => u.Id == userId));
-
+        var projects = await _worksnapsService.GetWorksnapsProjectsAsync(userId);
+        var user = await _worksnapsService.GetUserByWorksnapsId(userId);
         var result = new List<ProjectStatisticsResponse>();
 
-        foreach (var project in await query.ToListAsync())
+        foreach (var project in projects)
         {
             var daylySummary = await _worksnapsService.GetSummaryReportsForProjectAsync(project.WorksnapsId, today.Date, today.Date);
             var weeklySummary = await _worksnapsService.GetSummaryReportsForProjectAsync(project.WorksnapsId, startOfWeek.Date, endOfWeek.Date);

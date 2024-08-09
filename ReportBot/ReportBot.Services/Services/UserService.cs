@@ -63,22 +63,22 @@ public class UserService : IUserService
 
     public async Task<List<WorksnapsUserDTO>> GetUsersAsync(int managerId, SortingEnum sorting)
     {
-        var manager = await _userRepository
-            .Include(x => x.Projects)
-            .ThenInclude(x => x.Users)
-            .FirstOrDefaultAsync(x => x.Id == managerId)
-            ?? throw new Exception("Manager not found");
+        //var manager = await _userRepository
+        //    .Include(x => x.Projects)
+        //    .ThenInclude(x => x.Users)
+        //    .FirstOrDefaultAsync(x => x.Id == managerId)
+        //    ?? throw new Exception("Manager not found");
 
-        var users = await GetUsersFromWorksnapsAsync(manager);
+        var users = await GetUsersFromWorksnapsAsync(managerId);
 
         var result = SortUsers(users, sorting);
 
         return result;
     }
 
-    private async Task<List<WorksnapsUserDTO>> GetUsersFromWorksnapsAsync(User manager)
+    private async Task<List<WorksnapsUserDTO>> GetUsersFromWorksnapsAsync(int managerId)
     {
-        var userWorksnaps = await _worksnapsService.GetUserByWorksnapsId(manager.WorksnapsId);
+        var userWorksnaps = await _worksnapsService.GetUserByWorksnapsId(managerId);
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
 
         var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users.xml");

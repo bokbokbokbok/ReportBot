@@ -11,6 +11,7 @@ using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs.Project;
 using ReportBot.Common.Exceptions;
+using Microsoft.AspNetCore.Http;
 
 namespace McgTgBotNet.Services;
 
@@ -109,6 +110,9 @@ public class WorksnapsService : IWorksnapsService
     public async Task<List<SummaryReportDTO>> GetSummaryReportsForProjectAsync(int projectId, DateTime from, DateTime to)
     {
         var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/summary_reports?from_date={from.Date.ToString("yyyy-MM-dd")}&to_date={to.Date.ToString("yyyy-MM-dd")}&name=manager_report&project_ids={projectId}");
+        if (!response.IsSuccessStatusCode)
+            return new List<SummaryReportDTO>();
+
         response.EnsureSuccessStatusCode();
         var content = await response.Content.ReadAsStringAsync();
 
@@ -118,6 +122,30 @@ public class WorksnapsService : IWorksnapsService
         foreach (var element in doc.Root!.Elements())
         {
             var item = element.ParseXML<SummaryReportDTO>();
+
+            data.Add(item);
+        }
+
+        return data;
+    }
+
+    public async Task<List<ProjectDTO>> GetWorksnapsProjectsAsync(int userId)
+    {
+        var userWorksnaps = await GetUserByWorksnapsId(userId);
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
+
+        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/projects.xml");
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+
+        var doc = XDocument.Parse(content);
+
+        var data = new List<ProjectDTO>();
+
+        foreach (var element in doc.Root!.Elements())
+        {
+            var item = element.ParseXML<ProjectDTO>();
 
             data.Add(item);
         }
@@ -148,7 +176,7 @@ public class WorksnapsService : IWorksnapsService
 
         var projects = new List<Project>();
 
-        foreach(var item in _mapper.Map<List<Project>>(data))
+        foreach (var item in _mapper.Map<List<Project>>(data))
         {
             var project = await _projectRepository.FirstOrDefaultAsync(x => x.Name == item.Name);
             if (project == null)
@@ -226,7 +254,7 @@ public class WorksnapsService : IWorksnapsService
 
             if (item.DurationInMinutes >= user.ShiftTime)
             {
-                if(await GetTimeEntryAsync(item))
+                if (await GetTimeEntryAsync(item))
                     result.Add(item);
             }
         }

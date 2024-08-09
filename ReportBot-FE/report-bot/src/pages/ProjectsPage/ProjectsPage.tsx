@@ -69,8 +69,7 @@ const ProjectsPage = () => {
                       fontSize: "16px",
                       textTransform: "none",
                       marginTop: "10px",
-                    }}
-                  >
+                    }}>
                     View
                   </Button>
                 </Box>

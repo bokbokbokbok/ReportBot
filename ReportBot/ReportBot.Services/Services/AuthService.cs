@@ -1,4 +1,5 @@
 ﻿using McgTgBotNet.DB.Entities;
+using McgTgBotNet.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -34,28 +35,28 @@ public class AuthService : IAuthService
     {
         var worksnapsUser = await _worksnapsService.GetUserAsync(request.Email);
 
-        var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == worksnapsUser.Id)
-            ?? throw new NotFoundException($"User with such id not found. Id: {worksnapsUser.Id}");
+        var userRole = await _worksnapsService.GetUserRoleAsync(worksnapsUser.Id);
 
-        if (user.Role != "manager")
+        //var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == worksnapsUser.Id)
+        //    ?? throw new NotFoundException($"User with such id not found. Id: {worksnapsUser.Id}");
+
+        if (userRole.ToLower() != "manager")
             throw new ForbiddenException("You are not allowed to use admin dashboard");
 
-        var result = new AuthSuccessResponse(GenerateAccessToken(user));
+        var result = new AuthSuccessResponse(GenerateAccessToken(worksnapsUser));
 
         return result;
     }
 
-    private string GenerateAccessToken(User user)
+    private string GenerateAccessToken(WorksnapsUserDTO user)
     {
         var jwtTokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.UTF8.GetBytes(_jwtSettings.Secret);
 
         var claims = new List<Claim>
         {
-            new Claim("id", user.Id.ToString()),
-            new Claim("role", user.Role!),
-            new Claim("username", user.Username!),
-            new Claim("worksnapsId", user.WorksnapsId.ToString()),
+            new Claim("worksnapsId", user.Id.ToString()),
+            new Claim("username", user.Login),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
