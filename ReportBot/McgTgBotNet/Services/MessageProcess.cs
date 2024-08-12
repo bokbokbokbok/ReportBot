@@ -33,7 +33,7 @@ namespace McgTgBotNet.Services
             IReportService reportService,
             IRepository<DB.Entities.User> userRepository)
         {
-            client = new TelegramBotClient(ConfigsExtension.GetConfiguration("TelegramBot:Token"));
+            client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
             _worksnapsService = worksnapsService;
             _userService = userService;
             _projectRepository = projectRepository;

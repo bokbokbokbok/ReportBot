@@ -24,17 +24,17 @@ public static class HostExtension
     public static IHostBuilder CreateHostBuilder(this string[] args)
     {
         var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (directory != null && !directory.GetFiles("*.sln").Any())
-        {
-            directory = directory.Parent;
-        }
+        //while (directory != null && !directory.GetFiles("*.sln").Any())
+        //{
+        //    directory = directory.Parent;
+        //}
         return Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration((context, config) =>
-        {
-            config.SetBasePath(directory!.ToString())
-                  .AddJsonFile("McgTgBotNet\\appsettings.json", optional: false, reloadOnChange: true)
-                  .AddEnvironmentVariables();
-        })
+        //.ConfigureAppConfiguration((context, config) =>
+        //{
+        //    config.SetBasePath(directory!.ToString())
+        //          .AddJsonFile("McgTgBotNet\\appsettings.json", optional: false, reloadOnChange: true)
+        //          .AddEnvironmentVariables();
+        //})
         .ConfigureServices((hostContext, services) =>
         {
             var configuration = hostContext.Configuration;
@@ -62,7 +62,7 @@ public static class HostExtension
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         services.AddDbContext<ApplicationDbContext>(opt =>
-            opt.UseSqlServer("Server=(local);Database=ReportBot;Trusted_Connection=True;TrustServerCertificate=true;"));
+            opt.UseSqlServer(ConfigExtension.GetConfiguration("ConnectionStrings:DefaultConnection")));
 
     }
 }

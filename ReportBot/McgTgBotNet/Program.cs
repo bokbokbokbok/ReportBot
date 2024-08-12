@@ -8,6 +8,7 @@ using McgTgBotNet.Services.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using McgTgBotNet.Extensions;
+using ReportBot.Common.Extensions;
 
 namespace McgTgBotNet;
 
@@ -18,11 +19,14 @@ public class Program
     public static async Task Main(string[] args)
     {
         var host = args.CreateHostBuilder().Build();
+        host.MigrateDatabase();
         var hostTask = host.RunAsync();
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
         Console.WriteLine("Hangfire Dashboard started at: http://localhost:5000/hangfire");
+        var cs = ConfigExtension.GetConfiguration("Worksnaps:ApiKey");
+        Console.WriteLine("dsfs "+ cs);
 
         await CreateClientAsync();
         await hostTask;
@@ -38,7 +42,7 @@ public class Program
 
     public static async Task<TelegramBotClient> CreateClientAsync()
     {
-        var client = new TelegramBotClient(ConfigsExtension.GetConfiguration("TelegramBot:Token"));
+        var client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
 
         CancellationTokenSource cts = new CancellationTokenSource();
         ReceiverOptions receiverOptions = new ReceiverOptions()

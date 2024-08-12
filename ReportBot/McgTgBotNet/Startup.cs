@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Builder;
+using ReportBot.Common.Extensions;
 
 namespace McgTgBotNet;
 

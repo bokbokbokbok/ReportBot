@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=master;User=SA;Password=Fedko123!@#;TrustServerCertificate=True
+      - Worksnaps__ApiKey=MCCNm0JhBxAAbhsl4CvrV3ljBVtFVrYlcGATKhFX
+      - PROJECT=ReportBot
+    restart: always
+  tg:
+    build:
+      context: .
+      dockerfile: Dockerfile_Tg
+    ports:
+      - 8081:80
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=master;User=SA;Password=Fedko123!@#;TrustServerCertificate=True
+      - Worksnaps__ApiKey=MCCNm0JhBxAAbhsl4CvrV3ljBVtFVrYlcGATKhFX
+      - PROJECT=ReportBot
+    restart: always
+  db:  
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=SA
+      - SA_PASSWORD=Fedko123!@#
+    ports:
+      - 5545:1433

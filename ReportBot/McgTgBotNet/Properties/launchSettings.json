@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "McgTgBotNet": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

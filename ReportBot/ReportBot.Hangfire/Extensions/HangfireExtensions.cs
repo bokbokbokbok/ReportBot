@@ -6,6 +6,7 @@ using Hangfire;
 using Hangfire.Jobs;
 using Hangfire.SqlServer;
 using Microsoft.Extensions.Configuration;
+using McgTgBotNet.Extensions;
 
 namespace McgTgBotNet.Hangfire.Extensions
 {
@@ -25,9 +26,9 @@ namespace McgTgBotNet.Hangfire.Extensions
         public static void AddHangfire(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHangfire(
-                cfg => cfg.UseSqlServerStorage(configuration.GetConnectionString("DefaultConnection")));
+                cfg => cfg.UseSqlServerStorage(ConfigExtension.GetConfiguration("ConnectionStrings:DefaultConnection")));
 
-            JobStorage.Current = new SqlServerStorage(configuration.GetConnectionString("DefaultConnection"));
+            JobStorage.Current = new SqlServerStorage(ConfigExtension.GetConfiguration("ConnectionStrings:DefaultConnection"));
 
             services.AddHangfireServer();
             services.AddScoped<IHangfireService, HangfireService>();

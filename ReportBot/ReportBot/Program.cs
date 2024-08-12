@@ -18,6 +18,7 @@ using ReportBot.Utility;
 using ReportBot.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using ReportBot.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtConfig"));
@@ -119,7 +120,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+app.MigrateDatabase();
 app.UseCors(
     opt => opt.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
