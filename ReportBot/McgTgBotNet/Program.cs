@@ -24,10 +24,6 @@ public class Program
 
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
-        Console.WriteLine("Hangfire Dashboard started at: http://localhost:5000/hangfire");
-        var cs = ConfigExtension.GetConfiguration("Worksnaps:ApiKey");
-        Console.WriteLine("dsfs "+ cs);
-
         await CreateClientAsync();
         await hostTask;
     }
