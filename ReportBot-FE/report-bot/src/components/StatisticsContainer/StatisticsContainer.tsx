@@ -117,21 +117,6 @@ const StatisticsContainer = () => {
                                                 </Typography>
                                             </Typography>
                                         </Box>
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => {
-                                                navigate(`/project/${project.project.id}`);
-                                            }}
-                                            sx={{
-                                                width: '100px',
-                                                height: '35px',
-                                                borderRadius: '10px',
-                                                color: 'white',
-                                                fontSize: '12px',
-                                                textTransform: 'none',
-                                            }}>
-                                            View
-                                        </Button>
                                     </Box>
                                 ))
                             )}
