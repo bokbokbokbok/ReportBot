@@ -5,7 +5,6 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["McgTgBotNet/McgTgBotNet.csproj", "McgTgBotNet/"]
 COPY ["ReportBot/ReportBot.csproj", "ReportBot/"]
 COPY ["ReportBot.Hangfire/ReportBot.Hangfire.csproj", "ReportBot.Hangfire/"]
 COPY ["ReportBot.Services/ReportBot.Services.csproj", "ReportBot.Services/"]

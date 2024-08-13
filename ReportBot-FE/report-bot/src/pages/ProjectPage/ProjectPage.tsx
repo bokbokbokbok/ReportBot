@@ -47,7 +47,6 @@ const ProjectPage = () => {
     };
 
     useEffect(() => {
-        console.log(id);
         const getProjectById = async () => {
             const response = await Project.getById(id ?? "");
             setProject(response.data ?? undefined);
@@ -86,7 +85,7 @@ const ProjectPage = () => {
                             <IconButton aria-label="delete" onClick={scrollLeft}>
                                 <KeyboardArrowLeftIcon />
                             </IconButton>
-                            <Box className={styles.reportList}>
+                            <Box className={styles.reportList} ref={scrollContainerRef}>
                                 {reports.length === 0 ? (
                                     <Box className={styles.notFoundBox}>
                                         <Typography sx={{
