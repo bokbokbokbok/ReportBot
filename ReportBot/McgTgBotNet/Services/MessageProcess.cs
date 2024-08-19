@@ -62,10 +62,7 @@ namespace McgTgBotNet.Services
         public async Task ProcessTextAsync(Update update)
         {
             var message = update.Message;
-            var userChat = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message!.Chat.Id);
             var mainKeyboard = MainKeyboard.Create();
-            if (userChat != null)
-                mainKeyboard = MainKeyboard.Create(userChat);
 
             if (message!.Text!.ToLower().Contains("start"))
             {
@@ -75,7 +72,7 @@ namespace McgTgBotNet.Services
                 {
                     var sent = await client.SendTextMessageAsync(
                         message.Chat.Id,
-                        "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n/shiftTime: 120\r\n\r\nThank you!",
+                        "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n\r\nThank you!",
                         replyMarkup: mainKeyboard);
                 }
                 else
@@ -87,19 +84,6 @@ namespace McgTgBotNet.Services
                 }
             }
 
-            if (message!.Text!.ToLower().Contains("manager dashboard"))
-            {
-                var inlineKeyboard = new InlineKeyboardMarkup(new[]
-                {
-                    new[]
-                    {
-                        InlineKeyboardButton.WithUrl("Visit dashboard", "https://www.youtube.com/")
-                    }
-                });
-
-                await client.SendTextMessageAsync(message.Chat.Id, "📊 The Manager Dashboard is a dedicated panel designed for managers to efficiently manage and work with reports.", replyMarkup: inlineKeyboard);
-            }
-
             if (message.Text.ToLower().Contains("profile"))
             {
                 var user = await _userService.GetUserByChatIdAsync(message.Chat.Id);
@@ -107,9 +91,7 @@ namespace McgTgBotNet.Services
                 var text = $"👤 Profile\n" +
                            $"_Username:_ {user.Username}\n" +
                            $"_First Name:_ {user.FirstName}\n" +
-                           $"_Last Name:_ {user.LastName}\n" +
-                           $"_Shift Time:_ {user.ShiftTime} minutes";
-
+                           $"_Last Name:_ {user.LastName}\n";
                 var sent = await client.SendTextMessageAsync(
                     message.Chat.Id,
                     text,
@@ -117,15 +99,14 @@ namespace McgTgBotNet.Services
                     parseMode: ParseMode.MarkdownV2);
             }
 
-            if (message.Text.ToLower().Contains("/email") && message.Text.ToLower().Contains("/shifttime"))
+            if (message.Text.ToLower().Contains("/email"))
             {
-                string pattern = @"/email:\s*(?<email>[^ \r\n]+)\s*/shiftTime:\s*(?<shiftTime>\d+)";
+                string pattern = @"/email:\s*(?<email>[^ \r\n]+)";
 
                 Match match = Regex.Match(message.Text, pattern, RegexOptions.IgnoreCase);
 
                 var worksnapsUser = await _worksnapsService.GetUserAsync(match.Groups["email"].Value);
                 var role = await _worksnapsService.GetUserRoleAsync(worksnapsUser.Id);
-                int shiftTime = int.Parse(match.Groups["shiftTime"].Value);
                 var user = new DB.Entities.User
                 {
                     ChatId = message.Chat.Id,
@@ -133,7 +114,6 @@ namespace McgTgBotNet.Services
                     Username = worksnapsUser.Login,
                     FirstName = worksnapsUser.FirstName,
                     LastName = worksnapsUser.LastName!,
-                    ShiftTime = shiftTime,
                     Role = role.ToLower()
                 };
 
@@ -165,26 +145,6 @@ namespace McgTgBotNet.Services
                     message.Chat.Id,
                     text,
                     replyMarkup: mainKeyboard);
-            }
-
-            if (message.Text.ToLower().Contains("update shift time"))
-            {
-                var sent = await client.SendTextMessageAsync(
-                    message.Chat.Id,
-                    "Please enter your new shift time in minutes.\n\nExample:\n/updateShiftTime: 120"
-                    );
-            }
-
-            if (message.Text.ToLower().Contains("/updateshifttime"))
-            {
-                var shiftTime = int.Parse(Regex.Match(message.Text, @"\d+").Value);
-
-                await _userService.UpdateUserShiftTimeAsync(message.Chat.Id, shiftTime);
-
-                var sent = await client.SendTextMessageAsync(
-                    message.Chat.Id,
-                    "Thank you for updating shift time"
-                    );
             }
 
             if (message.Text.ToLower().Contains("add daylireport"))

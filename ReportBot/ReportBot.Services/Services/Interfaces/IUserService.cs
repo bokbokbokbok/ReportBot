@@ -9,5 +9,4 @@ public interface IUserService
     Task<User> AddUserAsync(User user);
     Task<User> GetUserByChatIdAsync(long chatId);
     Task<List<WorksnapsUserDTO>> GetUsersAsync(int managerId, SortingEnum sorting);
-    Task<bool> UpdateUserShiftTimeAsync(long chatId, int shiftTime);
 }
