@@ -63,13 +63,19 @@ public class UserService : IUserService
 
     public async Task<List<WorksnapsUserDTO>> GetUsersAsync(int managerId, SortingEnum sorting)
     {
-        //var manager = await _userRepository
-        //    .Include(x => x.Projects)
-        //    .ThenInclude(x => x.Users)
-        //    .FirstOrDefaultAsync(x => x.Id == managerId)
-        //    ?? throw new Exception("Manager not found");
+        var worksnapsUsers = await GetUsersFromWorksnapsAsync(managerId);
 
-        var users = await GetUsersFromWorksnapsAsync(managerId);
+        var users = new List<WorksnapsUserDTO>();
+
+        foreach (var item in worksnapsUsers)
+        {
+            var role = await _worksnapsService.GetUserRoleAsync(item.Id);
+
+            if (role.ToLower() == "member")
+            {
+                users.Add(item);
+            }
+        }
 
         var result = SortUsers(users, sorting);
 

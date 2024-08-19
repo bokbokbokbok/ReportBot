@@ -1,13 +1,10 @@
-﻿using McgTgBotNet.DB.Entities;
-using McgTgBotNet.DTOs;
-using Microsoft.EntityFrameworkCore;
+﻿using McgTgBotNet.DTOs;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using ReportBot.Common.Configs;
 using ReportBot.Common.Exceptions;
 using ReportBot.Common.Requests;
 using ReportBot.Common.Responses;
-using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,16 +14,13 @@ namespace ReportBot.Services.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IRepository<User> _userRepository;
     private readonly IWorksnapsService _worksnapsService;
     private readonly JwtSettings _jwtSettings;
 
     public AuthService(
-        IRepository<User> userRepository,
         IWorksnapsService worksnapsService,
         IOptions<JwtSettings> jwtSettings)
     {
-        _userRepository = userRepository;
         _worksnapsService = worksnapsService;
         _jwtSettings = jwtSettings.Value;
     }
@@ -36,9 +30,6 @@ public class AuthService : IAuthService
         var worksnapsUser = await _worksnapsService.GetUserAsync(request.Email);
 
         var userRole = await _worksnapsService.GetUserRoleAsync(worksnapsUser.Id);
-
-        //var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == worksnapsUser.Id)
-        //    ?? throw new NotFoundException($"User with such id not found. Id: {worksnapsUser.Id}");
 
         if (userRole.ToLower() != "manager")
             throw new ForbiddenException("You are not allowed to use admin dashboard");

@@ -1,5 +1,6 @@
 ﻿using Hangfire.Abstractions;
 using McgTgBotNet.DB.Entities;
+using McgTgBotNet.Extensions;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
@@ -16,7 +17,7 @@ namespace Hangfire.Jobs
 
         public WorksnapsUserJob(IRepository<User> userRepository, IWorksnapsService worksnapsService)
         {
-            client = new TelegramBotClient("7233685875:AAGiO5CGVmL7rIMHl7t8SJLuaRTHhgL1214");
+            client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
             _userRepository = userRepository;
             _worksnapsService = worksnapsService;
         }
@@ -51,4 +52,3 @@ namespace Hangfire.Jobs
             }
         }
     }
-}

@@ -19,6 +19,7 @@ using ReportBot.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using ReportBot.Common.Extensions;
+using ReportBot.Services.Worksnaps;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtConfig"));
@@ -43,6 +44,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IWorksnapsRepository, WorksnapsRepository>();
+builder.Services.AddHttpClient<IWorksnapsRepository, WorksnapsRepository>();
 
 // Validators
 builder.Services.AddFluentValidationAutoValidation();
