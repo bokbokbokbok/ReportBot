@@ -88,7 +88,8 @@ public class ReportService : IReportService
 
     public async Task<SessionStatisticsResponse> GetSessionsStatiticsAsync()
     {
-        var totalSessions = await _worksnapsService.GetSummaryReportsAsync();
+        var today = DateTime.Today;
+        var totalSessions = await _worksnapsService.GetSummaryReportsAsync(today, today);
 
         var closeSessions = await _worksnapsService.GetFinishedReportsAsync();
 

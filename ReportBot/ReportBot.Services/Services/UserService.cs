@@ -5,6 +5,7 @@ using McgTgBotNet.Extensions;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.Enums;
 using ReportBot.Common.Exceptions;
+using ReportBot.Common.Responses;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
 using System.Net.Http.Headers;
@@ -49,11 +50,22 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<List<WorksnapsUserDTO>> GetUsersAsync(int managerId, SortingEnum sorting)
+    public async Task<List<UserResponse>> GetUsersAsync(int managerId, SortingEnum sorting)
     {
+        DateTime today = DateTime.Today;
+        DateTime startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
+
+        if (today.DayOfWeek == DayOfWeek.Sunday)
+            startOfWeek = today.AddDays(-6);
+
+        DateTime endOfWeek = startOfWeek.AddDays(6);
+
         var worksnapsUsers = await GetUsersFromWorksnapsAsync(managerId);
 
-        var users = new List<WorksnapsUserDTO>();
+        var users = new List<UserResponse>();
+
+        var summaryReportPerDay = await _worksnapsService.GetSummaryReportsAsync(today, today);
+        var summaryReportPerWeek = await _worksnapsService.GetSummaryReportsAsync(startOfWeek, endOfWeek);
 
         foreach (var item in worksnapsUsers)
         {
@@ -61,13 +73,20 @@ public class UserService : IUserService
 
             if (role.ToLower() == "member")
             {
-                users.Add(item);
+                var user = new UserResponse
+                {
+                    User = item,
+                    TimePerDay = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes),
+                    TimePerWeek = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes)
+                };
+
+                users.Add(user);
             }
         }
 
-        var result = SortUsers(users, sorting);
+        //var result = SortUsers(users, sorting);
 
-        return result;
+        return users;
     }
 
     private async Task<List<WorksnapsUserDTO>> GetUsersFromWorksnapsAsync(int managerId)
