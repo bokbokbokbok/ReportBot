@@ -38,16 +38,15 @@ public class WorksnapsService : IWorksnapsService
 
     public async Task<List<SummaryReportDTO>> GetFinishedReportsAsync()
     {
-        var data = await GetSummaryReportsAsync();
+        var today = DateTime.Today;
+        var data = await GetSummaryReportsAsync(today, today);
 
         return await IsSessionFinishedAsync(data);
     }
 
-    public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync()
+    public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync(DateTime from, DateTime to)
     {
-        var today = DateTime.Today;
-
-        var data = await _worksnapsRepository.GetSummaryReportsAsync(null, today, today, null);
+        var data = await _worksnapsRepository.GetSummaryReportsAsync(null, from, to, null);
 
         return data;
     }

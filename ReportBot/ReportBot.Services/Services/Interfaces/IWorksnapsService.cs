@@ -8,7 +8,7 @@ public interface IWorksnapsService
 {
     Task<bool> AddProjectToUser(int userId);
     Task<List<SummaryReportDTO>> GetFinishedReportsAsync();
-    Task<List<SummaryReportDTO>> GetSummaryReportsAsync();
+    Task<List<SummaryReportDTO>> GetSummaryReportsAsync(DateTime from, DateTime to);
     Task<List<SummaryReportDTO>> GetSummaryReportsForProjectAsync(int projectId, DateTime from, DateTime to);
     Task<WorksnapsUserDTO> GetUserByWorksnapsId(int id);
     Task<WorksnapsUserDTO> GetUserAsync(string email);
