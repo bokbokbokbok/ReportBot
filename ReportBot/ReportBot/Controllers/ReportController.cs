@@ -48,5 +48,13 @@ namespace ReportBot.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> SendReportToChat(int reportId)
+        {
+            var result = await _reportService.SendReportToChatAsync(reportId);
+
+            return result ? Ok() : BadRequest();
+        }
     }
 }
