@@ -53,7 +53,7 @@ public class UserService : IUserService
     public async Task<List<UserResponse>> GetUsersAsync(int managerId, string? projectName)
     {
         DateTime today = DateTime.Today;
-        DateTime startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
+        DateTime startOfWeek = today.AddDays(-(today.DayOfWeek - DayOfWeek.Monday));
 
         if (today.DayOfWeek == DayOfWeek.Sunday)
             startOfWeek = today.AddDays(-6);
@@ -74,7 +74,7 @@ public class UserService : IUserService
             {
                 User = _mapper.Map<UserDTO>(item),
                 TimePerDay = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes),
-                TimePerWeek = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes)
+                TimePerWeek = summaryReportPerWeek.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes)
             };
 
             users.Add(user);
