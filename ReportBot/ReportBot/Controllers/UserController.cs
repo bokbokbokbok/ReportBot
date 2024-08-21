@@ -19,10 +19,10 @@ namespace ReportBot.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers(SortingEnum sorting)
+        public async Task<IActionResult> GetUsers(string? projectName)
         {
             var managerId = HttpContext.GetUserId();
-            var result = await _userService.GetUsersAsync(managerId, sorting);
+            var result = await _userService.GetUsersAsync(managerId, projectName);
 
             return Ok(result);
         }
