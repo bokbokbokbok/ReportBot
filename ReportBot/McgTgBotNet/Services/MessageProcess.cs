@@ -63,25 +63,64 @@ namespace McgTgBotNet.Services
         {
             var message = update.Message;
             var mainKeyboard = MainKeyboard.Create();
+            Console.WriteLine($"Received a text message {message!.Chat.Type}.");
 
             if (message!.Text!.ToLower().Contains("start"))
             {
-                var user = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message.Chat.Id);
-
-                if (user == null)
+                if (message.Chat.Type == ChatType.Group ||
+                    message.Chat.Type == ChatType.Supergroup)
                 {
+                    var projects = await _projectRepository.ToListAsync();
+                    List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
+
+                    foreach (var project in projects)
+                    {
+                        KeyboardButton[] row = new KeyboardButton[]
+                        {
+                            new KeyboardButton(project.Name)
+                        };
+
+                        buttons.Add(row);
+                    }
+
                     var sent = await client.SendTextMessageAsync(
-                        message.Chat.Id,
-                        "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n\r\nThank you!",
-                        replyMarkup: mainKeyboard);
+                            message.Chat.Id,
+                            "👋 Hi there! To add this chat to your project, please select a project. Thank you!",
+                            replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
                 }
                 else
                 {
-                    var sent = await client.SendTextMessageAsync(
-                         message.Chat.Id,
-                         $"👋Hi, {user.FirstName} {user.LastName}! How can I help you?",
-                         replyMarkup: mainKeyboard);
+                    var user = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message.Chat.Id);
+                    if (user == null)
+                    {
+                        var sent = await client.SendTextMessageAsync(
+                            message.Chat.Id,
+                            "👋Hi! Please enter your Worksnaps email and the shift time in minutes.\r\n\r\nExample:\r\n/email: example@example.com\r\n\r\nThank you!",
+                            replyMarkup: mainKeyboard);
+                    }
+                    else
+                    {
+                        var sent = await client.SendTextMessageAsync(
+                             message.Chat.Id,
+                             $"👋Hi, {user.FirstName} {user.LastName}! How can I help you?",
+                             replyMarkup: mainKeyboard);
+                    }
                 }
+            }
+
+            if (await IsProjectExistAsync(message.Text.ToLower()) && (message.Chat.Type == ChatType.Group || message.Chat.Type == ChatType.Supergroup))
+            {
+                var project = await _projectRepository.FirstOrDefaultAsync(x => x.Name.ToLower() == message.Text.ToLower())
+                    ?? throw new Exception("Project not found");
+
+                project.GroupId = message.Chat.Id;
+
+                await _projectRepository.UpdateAsync(project);
+                
+                var sent = await client.SendTextMessageAsync(
+                            message.Chat.Id,
+                            "🎉 Congratulations! The chat has been successfully added to the project.",
+                            replyMarkup: new ReplyKeyboardRemove());
             }
 
             if (message.Text.ToLower().Contains("profile"))
@@ -170,7 +209,7 @@ namespace McgTgBotNet.Services
                     replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
             }
 
-            if (await IsProjectExistAsync(message.Text.ToLower()))
+            if (await IsProjectExistAsync(message.Text.ToLower()) && message.Chat.Type == ChatType.Private)
             {
                 messageHistory.Add(message);
 

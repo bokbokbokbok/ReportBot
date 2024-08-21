@@ -12,5 +12,6 @@ namespace ReportBot.Services.Services.Interfaces
         Task<List<ReportDTO>> GetReportsForUserAsync(long chatId);
         Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync();
         Task<SessionStatisticsResponse> GetSessionsStatiticsAsync();
+        Task<bool> SendReportToChatAsync(int reportId);
     }
 }

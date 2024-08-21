@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using McgTgBotNet.DB.Entities;
+using McgTgBotNet.Extensions;
 using McgTgBotNet.Models;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs;
-using ReportBot.Common.Extensions;
+using ReportBot.Common.Exceptions;
 using ReportBot.Common.Requests;
 using ReportBot.Common.Responses;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
+using Telegram.Bot;
 
 namespace ReportBot.Services.Services;
 
@@ -16,6 +18,7 @@ public class ReportService : IReportService
     private readonly IRepository<Report> _reportRepository;
     private readonly IRepository<User> _userRepository;
     private readonly IWorksnapsService _worksnapsService;
+    private readonly TelegramBotClient _botClient;
     private readonly IMapper _mapper;
 
     public ReportService(
@@ -28,6 +31,7 @@ public class ReportService : IReportService
         _userRepository = userRepository;
         _worksnapsService = worksnapsService;
         _mapper = mapper;
+        _botClient = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
     }
 
     public async Task<ReportDTO> AddReportAsync(CreateReportDTO report)
@@ -162,6 +166,28 @@ public class ReportService : IReportService
         };
 
         return result;
+    }
+
+    public async Task<bool> SendReportToChatAsync(int reportId)
+    {
+        var report = await _reportRepository
+            .Include(x => x.Project)
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == reportId)
+            ?? throw new Exception("Report not found");
+
+        if (report.Project.GroupId == null)
+            throw new NotFoundException("Please, add chat to project");
+
+        var text = $"💻 Project: {report.Project.Name}\n" +
+                   $"👤 User: {report.User.Username}\n" +
+                   $"📅 Date: {report.DateOfShift.Date}\n" +
+                   $"⏰ Time: {report.TimeOfShift} minutes\n" +
+                   $"📝 {report.Message}\n\n";
+
+        var send = await _botClient.SendTextMessageAsync(report.Project.GroupId, text);
+
+        return send != null;
     }
 
     private async Task<List<ReportDTO>> FilterReportsAsync(IQueryable<Report> query, FilterRequest request)
