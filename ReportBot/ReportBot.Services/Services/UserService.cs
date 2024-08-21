@@ -1,31 +1,31 @@
 ﻿using AutoMapper;
 using McgTgBotNet.DB.Entities;
-using McgTgBotNet.DTOs;
-using McgTgBotNet.Extensions;
+using McgTgBotNet.Models;
 using Microsoft.EntityFrameworkCore;
-using ReportBot.Common.Enums;
-using ReportBot.Common.Exceptions;
+using ReportBot.Common.DTOs;
 using ReportBot.Common.Responses;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
 
 namespace ReportBot.Services.Services;
 
 public class UserService : IUserService
 {
     private readonly IRepository<User> _userRepository;
+    private readonly IRepository<Project> _projectRepository;
     private readonly IWorksnapsService _worksnapsService;
-    private readonly HttpClient _httpClient;
+    private readonly IMapper _mapper;
 
     public UserService(
         IRepository<User> userRepository,
-        IWorksnapsService worksnapsService)
+        IWorksnapsService worksnapsService,
+        IRepository<Project> projectRepository,
+        IMapper mapper)
     {
         _userRepository = userRepository;
         _worksnapsService = worksnapsService;
-        _httpClient = new HttpClient();
+        _projectRepository = projectRepository;
+        _mapper = mapper;
     }
 
     public async Task<User> AddUserAsync(User user)
@@ -50,7 +50,7 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<List<UserResponse>> GetUsersAsync(int managerId, SortingEnum sorting)
+    public async Task<List<UserResponse>> GetUsersAsync(int managerId, string? projectName)
     {
         DateTime today = DateTime.Today;
         DateTime startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
@@ -60,70 +60,53 @@ public class UserService : IUserService
 
         DateTime endOfWeek = startOfWeek.AddDays(6);
 
-        var worksnapsUsers = await GetUsersFromWorksnapsAsync(managerId);
+        var projectUsers = await GetUsersForProjectsAsync(managerId);
+        var filteredUsers = FilteredUsers(projectUsers, projectName);
 
         var users = new List<UserResponse>();
 
         var summaryReportPerDay = await _worksnapsService.GetSummaryReportsAsync(today, today);
         var summaryReportPerWeek = await _worksnapsService.GetSummaryReportsAsync(startOfWeek, endOfWeek);
 
-        foreach (var item in worksnapsUsers)
+        foreach (var item in filteredUsers)
         {
-            var role = await _worksnapsService.GetUserRoleAsync(item.Id);
-
-            if (role.ToLower() == "member")
+            var user = new UserResponse
             {
-                var user = new UserResponse
-                {
-                    User = item,
-                    TimePerDay = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes),
-                    TimePerWeek = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes)
-                };
+                User = _mapper.Map<UserDTO>(item),
+                TimePerDay = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes),
+                TimePerWeek = summaryReportPerDay.Where(x => x.UserId == item.Id).Sum(x => x.DurationInMinutes)
+            };
 
-                users.Add(user);
-            }
+            users.Add(user);
         }
-
-        //var result = SortUsers(users, sorting);
 
         return users;
     }
 
-    private async Task<List<WorksnapsUserDTO>> GetUsersFromWorksnapsAsync(int managerId)
+    private async Task<List<User>> GetUsersForProjectsAsync(int managerId)
     {
-        var userWorksnaps = await _worksnapsService.GetUserByWorksnapsId(managerId);
-        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes(userWorksnaps.ApiToken)));
+        var projects = await _worksnapsService.GetWorksnapsProjectsAsync(managerId);
+        var users = new List<User>();
 
-        var response = await _httpClient.GetAsync($"https://api.worksnaps.com:443/api/users.xml");
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-
-        var doc = XDocument.Parse(content);
-
-        var data = new List<WorksnapsUserDTO>();
-
-        foreach (var element in doc.Root!.Elements())
+        foreach (var item in projects)
         {
-            var item = element.ParseXML<WorksnapsUserDTO>();
+            var project = await _projectRepository.Include(x => x.Users).FirstOrDefaultAsync(x => x.Name == item.Name);
 
-            data.Add(item);
+            if (project == null)
+                continue;
+            users.AddRange(project.Users);
         }
 
-        return data;
+        return users;
     }
 
-    private List<WorksnapsUserDTO> SortUsers(List<WorksnapsUserDTO> users, SortingEnum sorting)
+    private List<User> FilteredUsers(List<User> users, string? projectName)
     {
-        users = sorting switch
-        {
-            SortingEnum.None => users,
-            SortingEnum.FirstName => users.OrderBy(x => x.FirstName).ToList(),
-            SortingEnum.LastName => users.OrderBy(x => x.LastName).ToList(),
-            SortingEnum.Username => users.OrderBy(x => x.Login).ToList(),
-            SortingEnum.Email => users.OrderBy(x => x.Email).ToList(),
-            _ => throw new IncorrectParametersException("Incorrect sorting parameter")
-        };
+        if (string.IsNullOrEmpty(projectName))
+            return users;
 
-        return users;
+        var result = users.Where(x => x.Projects.Any(p => p.Name.ToLower() == projectName.ToLower())).ToList();
+
+        return result;
     }
 }
