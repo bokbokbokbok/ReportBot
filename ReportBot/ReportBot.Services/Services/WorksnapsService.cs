@@ -170,9 +170,8 @@ public class WorksnapsService : IWorksnapsService
         var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
         var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
 
-        //var data = await _worksnapsRepository.GetTimeEntriesAsync(null, dto.ProjectId.ToString(), dto.UserId.ToString(), fromTimestamp, toTimestamp);
-        var data = new List<TimeEntryDTO>();
-        if (data.Count == 0)
+        var data = await _worksnapsRepository.GetTimeEntriesAsync(null, dto.ProjectId.ToString(), dto.UserId.ToString(), fromTimestamp, toTimestamp);
+        if (data == null || data.Count == 0)
             return null;
 
         return data.Last();
