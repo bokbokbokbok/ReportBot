@@ -1,6 +1,4 @@
 ﻿using McgTgBotNet.DB.Entities;
-using McgTgBotNet.DTOs;
-using ReportBot.Common.Enums;
 using ReportBot.Common.Responses;
 
 namespace ReportBot.Services.Services.Interfaces;

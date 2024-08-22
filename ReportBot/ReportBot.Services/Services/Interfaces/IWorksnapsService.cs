@@ -14,4 +14,5 @@ public interface IWorksnapsService
     Task<WorksnapsUserDTO> GetUserAsync(string email);
     Task<string> GetUserRoleAsync(int id);
     Task<List<ProjectDTO>> GetWorksnapsProjectsAsync(int userId);
+    Task<TimeEntryDTO> GetLastTimeEntryAsync(SummaryReportDTO dto);
 }

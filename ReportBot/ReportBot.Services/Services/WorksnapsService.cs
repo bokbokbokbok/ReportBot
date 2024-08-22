@@ -162,7 +162,7 @@ public class WorksnapsService : IWorksnapsService
         return result;
     }
 
-    private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
+    public async Task<TimeEntryDTO> GetLastTimeEntryAsync(SummaryReportDTO dto)
     {
         DateTime startOfDay = DateTime.Today.Date;
         DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
@@ -172,11 +172,17 @@ public class WorksnapsService : IWorksnapsService
 
         var data = await _worksnapsRepository.GetTimeEntriesAsync(null, dto.ProjectId.ToString(), dto.UserId.ToString(), fromTimestamp, toTimestamp);
 
-        var lastTimeEntry = DateTimeOffset.FromUnixTimeSeconds(data.Last().LoggedTimestamp).UtcDateTime.ToLocalTime();
+        return data.Last();
+    }
 
-        if (!(lastTimeEntry.AddMinutes(10) > DateTime.Now)
-            && lastTimeEntry.AddMinutes(10) >= DateTime.Now.AddMinutes(-10)
-            && lastTimeEntry.AddMinutes(10) <= DateTime.Now)
+    private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
+    {
+        var lastTimeEntry = await GetLastTimeEntryAsync(dto);
+        var loggedTime = DateTimeOffset.FromUnixTimeSeconds(lastTimeEntry.LoggedTimestamp).UtcDateTime.ToLocalTime();
+
+        if (!(loggedTime.AddMinutes(10) > DateTime.Now)
+            && loggedTime.AddMinutes(10) >= DateTime.Now.AddMinutes(-10)
+            && loggedTime.AddMinutes(10) <= DateTime.Now)
         {
             return true;
         }

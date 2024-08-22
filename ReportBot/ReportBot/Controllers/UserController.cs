@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ReportBot.Common.Enums;
 using ReportBot.Common.Extensions;
 using ReportBot.Services.Services.Interfaces;
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using McgTgBotNet.DB.Entities;
+using McgTgBotNet.DTOs;
 using McgTgBotNet.Extensions;
 using McgTgBotNet.Models;
 using Microsoft.EntityFrameworkCore;
@@ -95,7 +96,16 @@ public class ReportService : IReportService
         var today = DateTime.Today;
         var totalSessions = await _worksnapsService.GetSummaryReportsAsync(today, today);
 
-        var closeSessions = await _worksnapsService.GetFinishedReportsAsync();
+        var closeSessions = new List<SummaryReportDTO>();
+
+        foreach (var item in totalSessions)
+        {
+            var lastTime = await _worksnapsService.GetLastTimeEntryAsync(item);
+            var fromTime = DateTimeOffset.FromUnixTimeSeconds(lastTime.FromTimestamp).UtcDateTime.ToLocalTime();
+
+            if (fromTime.AddMinutes(20) < DateTime.Now)
+                closeSessions.Add(item);
+        }
 
         var reportsToday = await _reportRepository
             .Where(x => x.DateOfShift.Date == DateTime.Now.Date)
