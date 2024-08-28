@@ -53,7 +53,7 @@ public class WorksnapsService : IWorksnapsService
 
     public async Task<WorksnapsUserDTO> GetUserAsync(string email)
     {
-        if (Regex.IsMatch(email, @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$") == false)
+        if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase))
             throw new ArgumentException("Email is not valid");
 
         var data = await _worksnapsRepository.GetUsersAsync(null);

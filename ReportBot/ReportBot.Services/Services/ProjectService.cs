@@ -36,7 +36,7 @@ public class ProjectService : IProjectService
                 .Include(x => x.Users)
                 .FirstOrDefaultAsync(x => x.WorksnapsId == project.WorksnapsId);
 
-            if (item == null)
+            if (item == null)       
                 continue;
 
             projects.Add(item);
