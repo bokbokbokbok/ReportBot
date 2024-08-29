@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using McgTgBotNet.Models;
 using ReportBot.Common.DTOs.Project;
+using ReportBot.DataBase.Entities;
 
 namespace McgTgBotNet.Profiles;
 

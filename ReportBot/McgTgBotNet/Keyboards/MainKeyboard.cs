@@ -6,10 +6,10 @@ namespace McgTgBotNet.Keyboards
     {
         public static IReplyMarkup Create()
         {
-            KeyboardButton profile = new KeyboardButton("👤 Profile");
-            KeyboardButton myReports = new KeyboardButton("📋 My Reports");
-            KeyboardButton addReport = new KeyboardButton("📝 Add daylireport");
-            KeyboardButton close = new KeyboardButton("Close");
+            KeyboardButton profile = new KeyboardButton(KeyboardButtons.ProfileButton);
+            KeyboardButton myReports = new KeyboardButton(KeyboardButtons.ReportsButton);
+            KeyboardButton addReport = new KeyboardButton(KeyboardButtons.AddReportButton);
+            KeyboardButton close = new KeyboardButton(KeyboardButtons.CloseButton);
 
             List<KeyboardButton[]> buttons = new List<KeyboardButton[]>
             {

@@ -2,7 +2,6 @@
 using McgTgBotNet.DTOs;
 using McgTgBotNet.Extensions;
 using AutoMapper;
-using McgTgBotNet.Models;
 using System.Text.RegularExpressions;
 using ReportBot.Services.Services.Interfaces;
 using ReportBot.DataBase.Repositories.Interfaces;
@@ -10,6 +9,7 @@ using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs.Project;
 using ReportBot.Services.Worksnaps;
+using ReportBot.DataBase.Entities;
 
 namespace McgTgBotNet.Services;
 

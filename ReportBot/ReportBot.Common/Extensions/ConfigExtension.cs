@@ -11,9 +11,9 @@ public static class ConfigExtension
                    .AddJsonFile("appsettings.json")
                    .AddEnvironmentVariables();
 
-        IConfiguration configuration = builder.Build();
+        var configuration = builder.Build();
 
-        string config = configuration[item]!;
+        var config = configuration[item]!;
 
         if (string.IsNullOrEmpty(config))
         {

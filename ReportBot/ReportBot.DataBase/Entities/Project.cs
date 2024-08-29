@@ -1,7 +1,8 @@
 ﻿using McgTgBotNet.DB.Entities;
+using McgTgBotNet.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace McgTgBotNet.Models
+namespace ReportBot.DataBase.Entities
 {
     public class Project
     {

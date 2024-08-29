@@ -1,5 +1,6 @@
 using McgTgBotNet.DB.Entities;
 using Microsoft.EntityFrameworkCore;
+using ReportBot.DataBase.Entities;
 
 
 namespace McgTgBotNet.Models;

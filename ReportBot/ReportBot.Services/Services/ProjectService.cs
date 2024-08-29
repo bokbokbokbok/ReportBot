@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using McgTgBotNet.Models;
 using Microsoft.EntityFrameworkCore;
 using ReportBot.Common.DTOs.Project;
 using ReportBot.Common.Responses;
+using ReportBot.DataBase.Entities;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
 

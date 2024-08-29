@@ -4,11 +4,12 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Microsoft.Extensions.DependencyInjection;
-using McgTgBotNet.Services.Interfaces;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using McgTgBotNet.Extensions;
 using ReportBot.Common.Extensions;
+using McgTgBotNet.MessageHandler.Requests;
+using McgTgBotNet.Services.Interfaces;
 
 namespace McgTgBotNet;
 
@@ -67,8 +68,9 @@ public class Program
 
         using (var scope = serviceProvider.CreateScope())
         {
-            var scopedService = scope.ServiceProvider.GetRequiredService<IMessageProcess>();
-            await scopedService.ProcessMessageAsync(update);
+            var scopedService = scope.ServiceProvider.GetRequiredService<IMessageProcessor>();
+
+            await scopedService.Process(new MessageRequest { Update = update, Type = update.Type });
         }
     }
 }

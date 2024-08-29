@@ -2,7 +2,6 @@
 using McgTgBotNet.Hangfire.Services;
 using McgTgBotNet.Models;
 using McgTgBotNet.Services;
-using McgTgBotNet.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ReportBot.DataBase.Repositories.Interfaces;
@@ -14,9 +13,12 @@ using Hangfire.Jobs;
 using Microsoft.Extensions.Hosting;
 using McgTgBotNet.Hangfire.Extensions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using ReportBot.Hangfire;
 using ReportBot.Services.Worksnaps;
+using McgTgBotNet.MessageHandler;
+using Telegram.Bot;
+using McgTgBotNet.MessageHandler.Handlers;
+using McgTgBotNet.Services.Interfaces;
 
 namespace McgTgBotNet.Extensions;
 
@@ -42,10 +44,23 @@ public static class HostExtension
         });
     }
 
+    public static void AddMessageProcessor(this IServiceCollection services)
+    {
+        services.AddScoped<IMessageProcessor, MessageProcessor>();
+
+        services.RegisterServicesFromAssembly<IMessageHandler>(ServiceLifetime.Scoped);
+
+        services.AddSingleton<IHistoryContainer, HistoryContainer>();
+
+        var client = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
+
+        services.AddSingleton(client);
+    }
+
     public static void ConfigureServices(this IServiceCollection services)
     {
+        services.AddMessageProcessor();
         services.AddAutoMapper(typeof(ProjectProfile));
-        services.AddScoped<IMessageProcess, MessageProcess>();
         services.AddScoped<IWorksnapsService, WorksnapsService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IReportService, ReportService>();
@@ -58,5 +73,17 @@ public static class HostExtension
         services.AddDbContext<ApplicationDbContext>(opt =>
             opt.UseSqlServer(ConfigExtension.GetConfiguration("ConnectionStrings:DefaultConnection")));
 
+    }
+
+    private static void RegisterServicesFromAssembly<T>(this IServiceCollection services, ServiceLifetime lifetime)
+    {
+        var interfaceType = typeof(T);
+
+        var implementations = interfaceType.Assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && interfaceType.IsAssignableFrom(t));
+
+        foreach (var implementation in implementations)
+        {
+            services.Add(new ServiceDescriptor(interfaceType, implementation, lifetime));
+        }
     }
 }

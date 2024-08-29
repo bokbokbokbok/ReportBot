@@ -1,4 +1,5 @@
 ﻿using McgTgBotNet.Models;
+using ReportBot.DataBase.Entities;
 using System.ComponentModel.DataAnnotations;
 
 namespace McgTgBotNet.DB.Entities
