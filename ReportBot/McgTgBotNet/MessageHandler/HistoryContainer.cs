@@ -6,11 +6,6 @@ namespace McgTgBotNet.MessageHandler
     {
         private static readonly Dictionary<string, string> _history = new();
 
-        public HistoryContainer()
-        {
-            Console.WriteLine("HistoryContainer created!");
-        }
-
         public void Push(string key, string value)
         {
             if (string.IsNullOrWhiteSpace(key))
