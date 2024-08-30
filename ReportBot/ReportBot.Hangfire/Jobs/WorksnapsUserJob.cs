@@ -35,20 +35,13 @@ namespace Hangfire.Jobs
 
                 List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
 
-                foreach (var project in user.Projects)
-                {
-                    KeyboardButton[] row = new KeyboardButton[]
-                    {
-                        new KeyboardButton(project.Name)
-                    };
-
-                    buttons.Add(row);
-                }
+                var markup = new InlineKeyboardMarkup(
+                    user.Projects.Select(project => new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData(project.Name, $"#project-{project.Name}") }));
 
                 await client.SendTextMessageAsync(
                     user.ChatId,
                     $"👋 Hello {user.FirstName} {user.LastName}!\n\nYou have successfully completed your session. Great job! 🎉\n\nNow, please select the project you are working on:",
-                    replyMarkup: new ReplyKeyboardMarkup(buttons) { ResizeKeyboard = true });
+                    replyMarkup: markup);
             }
         }
     }
