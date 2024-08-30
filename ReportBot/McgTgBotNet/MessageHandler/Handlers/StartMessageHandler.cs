@@ -199,23 +199,28 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
         public async Task ExecuteAsync(MessageRequest request)
         {
-            var text = "Please, describe what you did. Example:\n\n#time: 300\r\nПрацював над проектами. Зробив щоб для конкретного юзера проекти підтягувались з worksnaps. Також зробив зв'язки між проектами та юзерами.\n\n#time - wasted time\r\n";
+            var text = "Please, describe what you did. Example:\n\n<i>Працював над проектами. Зробив щоб для конкретного юзера проекти підтягувались з worksnaps. Також зробив зв'язки між проектами та юзерами.</i>";
 
             if (request.Type == UpdateType.Message)
             {
                 _historyContainer.Push("date", request.Update.Message!.Text!);
+                _historyContainer.Push("dailyreport", "/dailyreport");
                 var send = await _client.SendTextMessageAsync(
                     request.Update.Message!.Chat.Id,
                     text,
-                    replyMarkup: new ReplyKeyboardRemove());
+                    replyMarkup: new ReplyKeyboardRemove(),
+                    parseMode: ParseMode.Html);
             }
             else if (request.Type == UpdateType.CallbackQuery)
             {
                 _historyContainer.Push("date", request.Update.CallbackQuery.Data.Replace(MessageTrigger, ""));
+                _historyContainer.Push("dailyreport", "/dailyreport");
+
                 var send = await _client.SendTextMessageAsync(
                     request.Update.CallbackQuery.Message!.Chat,
                     text,
-                    replyMarkup: new ReplyKeyboardRemove());
+                    replyMarkup: new ReplyKeyboardRemove(),
+                    parseMode: ParseMode.Html);
             }
         }
     }
@@ -236,18 +241,12 @@ namespace McgTgBotNet.MessageHandler.Handlers
             _reportService = reportService;
         }
 
-        public string MessageTrigger => "#time";
+        public string MessageTrigger => "/dailyreport";
 
         public async Task ExecuteAsync(MessageRequest request)
         {
             var mainKeyboard = MainKeyboard.Create();
             var message = request.Update.Message;
-
-            string pattern = @"#time:\s*(?<time>\d+)";
-
-            Match match = Regex.Match(request.Update.Message.Text, pattern, RegexOptions.IgnoreCase);
-
-            var time = int.Parse(match.Groups["time"].Value);
 
             var dateMessage = _historyContainer.Pull("date");
             var projectName = _historyContainer.Pull("project");
@@ -260,11 +259,12 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
             DateTime date = DateTime.ParseExact(dateMessage, "dd/MM/yyyy", CultureInfo.InvariantCulture);
 
+            _historyContainer.Clear();
+
             var report = new CreateReportDTO
             {
                 ChatId = message!.Chat.Id,
                 DateOfShift = date,
-                TimeOfShift = time,
                 Created = DateTime.Now,
                 Message = message.Text!,
                 UserName = message.From!.Username!,
@@ -273,7 +273,6 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
             var result = await _reportService.AddReportAsync(report);
 
-            _historyContainer.Clear();
 
             await _client.SendTextMessageAsync(message.Chat.Id, "Thank you for your report", replyMarkup: mainKeyboard);
         }
@@ -385,7 +384,6 @@ namespace McgTgBotNet.MessageHandler.Handlers
             {
                 text += $"💻 Project: {report.Project.Name}\n" +
                         $"📅 Date: {report.DateOfShift.Date}\n" +
-                        $"⏰ Time: {report.TimeOfShift} minutes\n" +
                         $"📝 {report.Message}\n\n";
             }
 

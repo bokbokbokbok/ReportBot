@@ -10,7 +10,6 @@ public class ReportDTO
     public string Message { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public DateTime DateOfShift { get; set; }
-    public int TimeOfShift { get; set; }
     public long ChatId { get; set; }
     public UserDTO User { get; set; } = null!;
     public ProjectDTO Project { get; set; } = null!;

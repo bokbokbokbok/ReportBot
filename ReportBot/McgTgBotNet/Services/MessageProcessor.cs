@@ -1,4 +1,5 @@
 ﻿using McgTgBotNet.Keyboards;
+using McgTgBotNet.MessageHandler;
 using McgTgBotNet.MessageHandler.Handlers;
 using McgTgBotNet.MessageHandler.Requests;
 using McgTgBotNet.Services.Interfaces;
@@ -13,11 +14,16 @@ namespace McgTgBotNet.Services
     public class MessageProcessor : IMessageProcessor
     {
         private readonly TelegramBotClient _client;
+        private readonly IHistoryContainer _historyContainer;
         private readonly IEnumerable<IMessageHandler> _handlers;
 
-        public MessageProcessor(IEnumerable<IMessageHandler> handlers, TelegramBotClient client)
+        public MessageProcessor(
+            IEnumerable<IMessageHandler> handlers,
+            IHistoryContainer historyContainer,
+            TelegramBotClient client)
         {
             _handlers = handlers;
+            _historyContainer = historyContainer;
             _client = client;
         }
 
@@ -29,6 +35,8 @@ namespace McgTgBotNet.Services
             }
             catch (Exception ex)
             {
+                _historyContainer.Clear();
+
                 long? chatId = request.Type switch
                 {
                     UpdateType.Message => request.Update.Message.Chat.Id,
@@ -51,7 +59,11 @@ namespace McgTgBotNet.Services
             {
                 var text = (request.Update?.Message?.Text) ?? throw new InvalidOperationException("Failed to retrieve message text.The message is null.");
 
-                predicate = (h) => h.MessageTrigger == text || text.StartsWith(h.MessageTrigger) || h.MessageTrigger == IsDate(text) || h.MessageTrigger == IsEmail(text);
+                predicate = (h) => h.MessageTrigger == text
+                    || text.StartsWith(h.MessageTrigger)
+                    || h.MessageTrigger == IsDate(text)
+                    || h.MessageTrigger == _historyContainer.Pull("dailyreport")
+                    || h.MessageTrigger == IsEmail(text);
             }
             else if (request.Type == UpdateType.CallbackQuery)
             {

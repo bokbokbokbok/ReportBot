@@ -137,37 +137,32 @@ public class ReportService : IReportService
 
         DateTime endOfWeek = startOfWeek.AddDays(6);
 
-        var daylyReports = await _reportRepository
-            .Include(x => x.Project)
-            .Where(x => x.DateOfShift.Date == DateTime.Now.Date)
-            .ToListAsync();
+        DateTime startOfMonth = new DateTime(today.Year, today.Month, 1);
+
+        DateTime endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month), 23, 59, 59);
+
+        var dailySummary = await _worksnapsService.GetSummaryReportsAsync(today, today);
 
         var dailyStatistics = new ReportStatisticsResponse
         {
-            TotalProjects = daylyReports.Select(x => x.Project).Distinct().Count(),
-            TotalReportsMinutes = daylyReports.Sum(x => x.TimeOfShift)
+            TotalProjects = dailySummary.Select(x => x.ProjectName).Distinct().Count(),
+            TotalReportsMinutes = dailySummary.Sum(x => x.DurationInMinutes)
         };
 
-        var weeklyReports = await _reportRepository
-            .Include(x => x.Project)
-            .Where(x => x.DateOfShift.Date >= startOfWeek && x.DateOfShift.Date <= endOfWeek)
-            .ToListAsync();
+        var weeklySummary = await _worksnapsService.GetSummaryReportsAsync(startOfWeek, endOfWeek);
 
         var weeklyStatistics = new ReportStatisticsResponse
         {
-            TotalProjects = weeklyReports.Select(x => x.Project).Distinct().Count(),
-            TotalReportsMinutes = weeklyReports.Sum(x => x.TimeOfShift)
+            TotalProjects = weeklySummary.Select(x => x.ProjectName).Distinct().Count(),
+            TotalReportsMinutes = weeklySummary.Sum(x => x.DurationInMinutes)
         };
 
-        var monthlyReports = await _reportRepository
-            .Include(x => x.Project)
-            .Where(x => x.DateOfShift.Month == DateTime.Now.Month)
-            .ToListAsync();
+        var monthlySummary = await _worksnapsService.GetSummaryReportsAsync(startOfMonth, endOfMonth);
 
         var monthlyStatistics = new ReportStatisticsResponse
         {
-            TotalProjects = monthlyReports.Select(x => x.Project).Distinct().Count(),
-            TotalReportsMinutes = monthlyReports.Sum(x => x.TimeOfShift)
+            TotalProjects = monthlySummary.Select(x => x.ProjectName).Distinct().Count(),
+            TotalReportsMinutes = monthlySummary.Sum(x => x.DurationInMinutes)
         };
 
 
@@ -195,7 +190,6 @@ public class ReportService : IReportService
         var text = $"💻 Project: {report.Project.Name}\n" +
                    $"👤 User: {report.User.Username}\n" +
                    $"📅 Date: {report.DateOfShift.Date}\n" +
-                   $"⏰ Time: {report.TimeOfShift} minutes\n" +
                    $"📝 {report.Message}\n\n";
 
         var send = await _botClient.SendTextMessageAsync(report.Project.GroupId, text);
