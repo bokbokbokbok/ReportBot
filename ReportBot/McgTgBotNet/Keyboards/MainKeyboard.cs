@@ -25,5 +25,22 @@ namespace McgTgBotNet.Keyboards
 
             return keyboard;
         }
+
+        public static IReplyMarkup CreateForGroup()
+        {
+            KeyboardButton createManagerReport = new KeyboardButton(KeyboardButtons.CreateManagerReport);
+
+            List<KeyboardButton[]> buttons = new List<KeyboardButton[]>
+            {
+                new KeyboardButton[] { createManagerReport }
+            };
+
+            ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(buttons)
+            {
+                ResizeKeyboard = true
+            };
+
+            return keyboard;
+        }
     }
 }

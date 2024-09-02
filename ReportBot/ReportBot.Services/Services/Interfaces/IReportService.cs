@@ -7,6 +7,7 @@ namespace ReportBot.Services.Services.Interfaces
     public interface IReportService
     {
         Task<ReportDTO> AddReportAsync(CreateReportDTO report);
+        Task<List<ManagerReportResponse>> GetManagerReportAsync();
         Task<List<ReportDTO>> GetReportsAsync(FilterRequest filterRequest);
         Task<List<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest);
         Task<List<ReportDTO>> GetReportsForUserAsync(long chatId);

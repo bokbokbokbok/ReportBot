@@ -94,10 +94,11 @@ public class UserService : IUserService
 
             if (project == null)
                 continue;
+
             users.AddRange(project.Users);
         }
 
-        return users;
+        return users.Distinct().ToList();
     }
 
     private List<User> FilteredUsers(List<User> users, string? projectName)

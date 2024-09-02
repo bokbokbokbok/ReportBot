@@ -8,6 +8,7 @@ using ReportBot.Common.DTOs;
 using ReportBot.Common.Exceptions;
 using ReportBot.Common.Requests;
 using ReportBot.Common.Responses;
+using ReportBot.DataBase.Entities;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
 using Telegram.Bot;
@@ -17,6 +18,7 @@ namespace ReportBot.Services.Services;
 public class ReportService : IReportService
 {
     private readonly IRepository<Report> _reportRepository;
+    private readonly IRepository<Project> _projectRepository;
     private readonly IRepository<User> _userRepository;
     private readonly IWorksnapsService _worksnapsService;
     private readonly TelegramBotClient _botClient;
@@ -26,13 +28,15 @@ public class ReportService : IReportService
         IRepository<Report> reportRepository,
         IRepository<User> userRepository,
         IWorksnapsService worksnapsService,
-        IMapper mapper)
+        IMapper mapper,
+        IRepository<Project> projectRepository)
     {
         _reportRepository = reportRepository;
         _userRepository = userRepository;
         _worksnapsService = worksnapsService;
         _mapper = mapper;
         _botClient = new TelegramBotClient(ConfigExtension.GetConfiguration("TelegramBot:Token"));
+        _projectRepository = projectRepository;
     }
 
     public async Task<ReportDTO> AddReportAsync(CreateReportDTO report)
@@ -76,6 +80,37 @@ public class ReportService : IReportService
         var reports = await FilterReportsAsync(query, filterRequest);
 
         return reports;
+    }
+
+    public async Task<List<ManagerReportResponse>> GetManagerReportAsync()
+    {
+        var summaryReports = await _worksnapsService.GetSummaryReportsAsync(DateTime.Today, DateTime.Today);
+
+        var projects = await _projectRepository.ToListAsync();
+
+        var result = new List<ManagerReportResponse>();
+
+        foreach (var project in projects)
+        {
+            var query = _reportRepository
+                .Include(x => x.User)
+                .Where(x => x.ProjectId == project.Id)
+                .Select(x => x.Message);
+
+            if (query.ToList().Count == 0)
+                continue;
+
+            var item = new ManagerReportResponse
+            {
+                ProjectName = project.Name,
+                TotalTime = summaryReports.Where(x => x.ProjectId == project.WorksnapsId).Sum(x => x.DurationInMinutes),
+                Messages = await query.ToListAsync()
+            };
+
+            result.Add(item);
+        }
+
+        return result;
     }
 
     public async Task<List<ReportDTO>> GetReportsForProjectAsync(int projectId, FilterRequest filterRequest)
@@ -189,7 +224,7 @@ public class ReportService : IReportService
 
         var text = $"💻 Project: {report.Project.Name}\n" +
                    $"👤 User: {report.User.Username}\n" +
-                   $"📅 Date: {report.DateOfShift.Date}\n" +
+                   $"📅 Date: {report.DateOfShift.Date:dd MMM yyyy}\n" +
                    $"📝 {report.Message}\n\n";
 
         var send = await _botClient.SendTextMessageAsync(report.Project.GroupId, text);
