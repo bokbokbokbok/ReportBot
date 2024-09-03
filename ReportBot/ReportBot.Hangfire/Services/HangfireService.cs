@@ -1,7 +1,5 @@
 ﻿using Hangfire.Abstractions;
 using Hangfire;
-using System;
-using System.Threading;
 
 namespace McgTgBotNet.Hangfire.Services
 {

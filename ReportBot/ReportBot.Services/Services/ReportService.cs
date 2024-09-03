@@ -136,8 +136,6 @@ public class ReportService : IReportService
         foreach (var item in totalSessions)
         {
             var lastTime = await _worksnapsService.GetLastTimeEntryAsync(item);
-            if (lastTime == null)
-                continue;
 
             var fromTime = DateTimeOffset.FromUnixTimeSeconds(lastTime.FromTimestamp).UtcDateTime.ToLocalTime();
 

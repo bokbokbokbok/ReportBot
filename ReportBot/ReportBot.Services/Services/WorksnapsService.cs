@@ -21,7 +21,6 @@ public class WorksnapsService : IWorksnapsService
     private readonly IMapper _mapper;
     private readonly IWorksnapsRepository _worksnapsRepository;
 
-
     public WorksnapsService(
         IRepository<User> userRepository,
         IRepository<Project> projectRepository,
@@ -40,8 +39,11 @@ public class WorksnapsService : IWorksnapsService
     {
         var today = DateTime.Today;
         var data = await GetSummaryReportsAsync(today, today);
+        var distinctData = data.GroupBy(x => new { x.UserId, x.ProjectId })
+            .Select(x => x.First())
+            .ToList();
 
-        return await IsSessionFinishedAsync(data);
+        return await IsSessionFinishedAsync(distinctData);
     }
 
     public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync(DateTime from, DateTime to)
@@ -144,6 +146,19 @@ public class WorksnapsService : IWorksnapsService
         return user.Role;
     }
 
+    public async Task<TimeEntryDTO> GetLastTimeEntryAsync(SummaryReportDTO dto)
+    {
+        DateTime startOfDay = DateTime.Today.Date;
+        DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+        var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
+        var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
+
+        var data = await _worksnapsRepository.GetTimeEntriesAsync(null, dto.ProjectId.ToString(), dto.UserId.ToString(), fromTimestamp, toTimestamp);
+
+        return data.Last();
+    }
+
     private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)
     {
         var result = new List<SummaryReportDTO>();
@@ -160,21 +175,6 @@ public class WorksnapsService : IWorksnapsService
         }
 
         return result;
-    }
-
-    public async Task<TimeEntryDTO> GetLastTimeEntryAsync(SummaryReportDTO dto)
-    {
-        DateTime startOfDay = DateTime.Today.Date;
-        DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
-
-        var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
-        var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
-
-        var data = await _worksnapsRepository.GetTimeEntriesAsync(null, dto.ProjectId.ToString(), dto.UserId.ToString(), fromTimestamp, toTimestamp);
-        if (data == null || data.Count == 0)
-            return null;
-
-        return data.Last();
     }
 
     private async Task<bool> GetTimeEntryAsync(SummaryReportDTO dto)
