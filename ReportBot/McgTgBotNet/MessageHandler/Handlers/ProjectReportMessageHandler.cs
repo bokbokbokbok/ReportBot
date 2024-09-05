@@ -29,7 +29,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
         public async Task ExecuteAsync(MessageRequest request)
         {
-            var projectName = request.Update.CallbackQuery.Data.Replace(MessageTrigger, "");
+            var projectName = request.Update.CallbackQuery!.Data!.Replace(MessageTrigger, "");
 
             var isProjectExists = await IsProjectExistAsync(projectName);
 
@@ -54,7 +54,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
         {
             _historyContainer.Push("project", data);
 
-            List<InlineKeyboardButton[]> keyboard = new[]
+            var keyboard = new[]
             {
                 new[] { InlineKeyboardButton.WithCallbackData($"Today ({DateTime.Today:dd/MM/yyyy})", $"#date-{DateTime.Today:dd/MM/yyyy}") },
                 new[] { InlineKeyboardButton.WithCallbackData($"Yesterday ({DateTime.Today.AddDays(-1):dd/MM/yyyy})", $"#date-{DateTime.Today.AddDays(-1):dd/MM/yyyy}") },

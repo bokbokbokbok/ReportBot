@@ -23,7 +23,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
         public async Task ExecuteAsync(MessageRequest request)
         {
-            if (request.Update.Message.Chat.Type != ChatType.Group)
+            if (request.Update.Message!.Chat.Type != ChatType.Group)
             {
                 throw new InvalidOperationException("This command is only available in group.");
             }

@@ -10,15 +10,15 @@ using Entities = McgTgBotNet.DB.Entities;
 
 namespace McgTgBotNet.MessageHandler.Handlers
 {
-    public class StartMessageHandler : IMessageHandler
+    public class AddProjectToChatHandler : IMessageHandler
     {
         private readonly TelegramBotClient _client;
         private readonly IRepository<Project> _projectRepository;
         private readonly IRepository<Entities.User> _userRepository;
 
-        public string MessageTrigger => "/start";
+        public string MessageTrigger => KeyboardButtons.AddProjectToChat;
 
-        public StartMessageHandler(
+        public AddProjectToChatHandler(
             TelegramBotClient client,
             IRepository<Project> projectRepository,
             IRepository<Entities.User> userRepository)
@@ -42,26 +42,8 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
                 var sent = await _client.SendTextMessageAsync(
                         message.Chat.Id,
-                        $"👋Hi! How can I help you?",
-                        replyMarkup: MainKeyboard.CreateForGroup());
-            }
-            else
-            {
-                var user = await _userRepository.FirstOrDefaultAsync(x => x.ChatId == message.Chat.Id);
-                if (user == null)
-                {
-                    var sent = await _client.SendTextMessageAsync(
-                        message.Chat.Id,
-                        "👋Hi! Please enter your Worksnaps email.\r\n\r\nThank you!",
-                        replyMarkup: mainKeyboard);
-                }
-                else
-                {
-                    var sent = await _client.SendTextMessageAsync(
-                         message.Chat.Id,
-                         $"👋Hi, {user.FirstName} {user.LastName}! How can I help you?",
-                         replyMarkup: mainKeyboard);
-                }
+                        "👋 Hi there! To add this chat to your project, please select a project. Thank you!",
+                        replyMarkup: markup);
             }
         }
     }

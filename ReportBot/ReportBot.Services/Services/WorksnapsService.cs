@@ -148,8 +148,8 @@ public class WorksnapsService : IWorksnapsService
 
     public async Task<TimeEntryDTO> GetLastTimeEntryAsync(SummaryReportDTO dto)
     {
-        DateTime startOfDay = DateTime.Today.Date;
-        DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+        var startOfDay = DateTime.Today.Date;
+        var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
         var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
         var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();

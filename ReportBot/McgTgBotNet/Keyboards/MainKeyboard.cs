@@ -6,19 +6,19 @@ namespace McgTgBotNet.Keyboards
     {
         public static IReplyMarkup Create()
         {
-            KeyboardButton profile = new KeyboardButton(KeyboardButtons.ProfileButton);
-            KeyboardButton myReports = new KeyboardButton(KeyboardButtons.ReportsButton);
-            KeyboardButton addReport = new KeyboardButton(KeyboardButtons.AddReportButton);
-            KeyboardButton close = new KeyboardButton(KeyboardButtons.CloseButton);
+            var profile = new KeyboardButton(KeyboardButtons.ProfileButton);
+            var myReports = new KeyboardButton(KeyboardButtons.ReportsButton);
+            var addReport = new KeyboardButton(KeyboardButtons.AddReportButton);
+            var close = new KeyboardButton(KeyboardButtons.CloseButton);
 
-            List<KeyboardButton[]> buttons = new List<KeyboardButton[]>
+            var buttons = new List<KeyboardButton[]>
             {
                 new KeyboardButton[] { profile, myReports },
                 new KeyboardButton[] { addReport },
                 new KeyboardButton[] { close }
             };
 
-            ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(buttons)
+            var keyboard = new ReplyKeyboardMarkup(buttons)
             {
                 ResizeKeyboard = true
             };
@@ -28,14 +28,15 @@ namespace McgTgBotNet.Keyboards
 
         public static IReplyMarkup CreateForGroup()
         {
-            KeyboardButton createManagerReport = new KeyboardButton(KeyboardButtons.CreateManagerReport);
+            var createManagerReport = new KeyboardButton(KeyboardButtons.CreateManagerReport);
+            var addProjectToChat = new KeyboardButton(KeyboardButtons.AddProjectToChat);
 
-            List<KeyboardButton[]> buttons = new List<KeyboardButton[]>
+            var buttons = new List<KeyboardButton[]>
             {
-                new KeyboardButton[] { createManagerReport }
+                new KeyboardButton[] { addProjectToChat, createManagerReport }
             };
 
-            ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup(buttons)
+            var keyboard = new ReplyKeyboardMarkup(buttons)
             {
                 ResizeKeyboard = true
             };

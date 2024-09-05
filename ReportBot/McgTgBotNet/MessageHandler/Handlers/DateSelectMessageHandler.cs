@@ -23,11 +23,6 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
         public async Task ExecuteAsync(MessageRequest request)
         {
-            if (request.Update.Message.Chat.Type != ChatType.Private)
-            {
-                throw new InvalidOperationException("This command is only available in private chat.");
-            }
-
             var text = "Please, describe what you did. Example:\n\n<i>Працював над проектами. Зробив щоб для конкретного юзера проекти підтягувались з worksnaps. Також зробив зв'язки між проектами та юзерами.</i>";
 
             if (request.Type == UpdateType.Message)

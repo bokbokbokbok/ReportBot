@@ -18,7 +18,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
 
         public async Task ExecuteAsync(MessageRequest request)
         {
-            if (request.Update.Message.Chat.Type != ChatType.Private)
+            if (request.Update.Message!.Chat.Type != ChatType.Private)
             {
                 throw new InvalidOperationException("This command is only available in private chat.");
             }
