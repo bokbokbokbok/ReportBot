@@ -49,7 +49,7 @@ public class ReportService : IReportService
         var project = user.Projects.FirstOrDefault(x => x.Name == report.ProjectName)
             ?? throw new Exception("Project not found");
 
-        var timeEntry = await _worksnapsService.GetTimeEntryAsync(user.WorksnapsId, project.WorksnapsId);
+        var timeEntry = await _worksnapsService.GetTimeEntryAsync(user.WorksnapsId, project.WorksnapsId, report.DateOfShift);
         var time = timeEntry.Sum(x => x.DurationInMinutes);
 
         var entity = _mapper.Map<Report>(report);

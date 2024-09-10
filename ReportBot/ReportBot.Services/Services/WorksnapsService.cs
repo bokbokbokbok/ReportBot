@@ -159,9 +159,9 @@ public class WorksnapsService : IWorksnapsService
         return data.Last();
     }
 
-    public async Task<List<TimeEntryDTO>> GetTimeEntryAsync(int userId, int projectId)
+    public async Task<List<TimeEntryDTO>> GetTimeEntryAsync(int userId, int projectId, DateTime date)
     {
-        var startOfDay = DateTime.Today.Date;
+        var startOfDay = date.Date;
         var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
         var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
