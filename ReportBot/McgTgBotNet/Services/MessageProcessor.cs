@@ -44,11 +44,13 @@ namespace McgTgBotNet.Services
                     _ => null,
                 };
 
-                if (chatId != null && request.Type == UpdateType.Message)
+                var errorMessage = request.Type == UpdateType.Message ? request.Update.Message : request.Update.CallbackQuery.Message;
+
+                if (chatId != null && errorMessage.Chat.Type == ChatType.Private)
                 {
                     await _client.SendTextMessageAsync(chatId, ex.Message, replyMarkup: MainKeyboard.Create());
                 }
-                else if (chatId != null && request.Type == UpdateType.CallbackQuery)
+                else if (chatId != null && errorMessage.Chat.Type == ChatType.Group || errorMessage.Chat.Type == ChatType.Supergroup)
                 {
                     await _client.SendTextMessageAsync(chatId, ex.Message, replyMarkup: MainKeyboard.CreateForGroup());
                 }
