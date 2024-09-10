@@ -11,7 +11,9 @@ using ReportBot.Common.Responses;
 using ReportBot.DataBase.Entities;
 using ReportBot.DataBase.Repositories.Interfaces;
 using ReportBot.Services.Services.Interfaces;
+using System.Linq.Expressions;
 using Telegram.Bot;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace ReportBot.Services.Services;
 
@@ -47,12 +49,22 @@ public class ReportService : IReportService
         var project = user.Projects.FirstOrDefault(x => x.Name == report.ProjectName)
             ?? throw new Exception("Project not found");
 
+        var timeEntry = await _worksnapsService.GetTimeEntryAsync(user.WorksnapsId, project.WorksnapsId);
+        var time = timeEntry.Sum(x => x.DurationInMinutes);
+
         var entity = _mapper.Map<Report>(report);
 
         entity.UserId = user.Id;
+        entity.UserName = user.Username;
         entity.ProjectId = project.Id;
+        entity.Time = time;
 
         await _reportRepository.InsertAsync(entity);
+
+        if(project.GroupId != null)
+        {
+            await SendReportToChatAsync(entity.Id);
+        }
 
         return _mapper.Map<ReportDTO>(entity);
     }
@@ -84,8 +96,6 @@ public class ReportService : IReportService
 
     public async Task<List<ManagerReportResponse>> GetManagerReportAsync()
     {
-        var summaryReports = await _worksnapsService.GetSummaryReportsAsync(DateTime.Today, DateTime.Today);
-
         var projects = await _projectRepository.ToListAsync();
 
         var result = new List<ManagerReportResponse>();
@@ -103,7 +113,7 @@ public class ReportService : IReportService
             var item = new ManagerReportResponse
             {
                 ProjectName = project.Name,
-                TotalTime = summaryReports.Where(x => x.ProjectId == project.WorksnapsId).Sum(x => x.DurationInMinutes),
+                TotalTime = await _reportRepository.Where(x => x.ProjectId == project.Id).SumAsync(x => x.Time),
                 Messages = await query.ToListAsync()
             };
 
@@ -162,17 +172,17 @@ public class ReportService : IReportService
 
     public async Task<Dictionary<string, ReportStatisticsResponse>> GetReportsStatisticsAsync()
     {
-        DateTime today = DateTime.Today;
-        DateTime startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
+        var today = DateTime.Today;
+        var startOfWeek = today.AddDays(-(int)(today.DayOfWeek - DayOfWeek.Monday));
 
         if (today.DayOfWeek == DayOfWeek.Sunday)
             startOfWeek = today.AddDays(-6);
 
-        DateTime endOfWeek = startOfWeek.AddDays(6);
+        var endOfWeek = startOfWeek.AddDays(6);
 
-        DateTime startOfMonth = new DateTime(today.Year, today.Month, 1);
+        var startOfMonth = new DateTime(today.Year, today.Month, 1);
 
-        DateTime endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month), 23, 59, 59);
+        var endOfMonth = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month), 23, 59, 59);
 
         var dailySummary = await _worksnapsService.GetSummaryReportsAsync(today, today);
 
@@ -223,9 +233,13 @@ public class ReportService : IReportService
         var text = $"💻 Project: {report.Project.Name}\n" +
                    $"👤 User: {report.User.Username}\n" +
                    $"📅 Date: {report.DateOfShift.Date:dd MMM yyyy}\n" +
+                   $"⌚ Time: {report.Time}\n" +
                    $"📝 {report.Message}\n\n";
 
-        var send = await _botClient.SendTextMessageAsync(report.Project.GroupId, text);
+        var send = await _botClient.SendTextMessageAsync(
+            report.Project.GroupId,
+            text,
+            replyMarkup: new ReplyKeyboardRemove());
 
         return send != null;
     }

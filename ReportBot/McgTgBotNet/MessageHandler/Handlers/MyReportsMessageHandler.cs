@@ -37,6 +37,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
             {
                 text += $"💻 Project: {report.Project.Name}\n" +
                         $"📅 Date: {report.DateOfShift.Date:dd MMM yyyy}\n" +
+                        $"⌚ Time: {report.Time}\n" +
                         $"📝 {report.Message}\n\n";
             }
 

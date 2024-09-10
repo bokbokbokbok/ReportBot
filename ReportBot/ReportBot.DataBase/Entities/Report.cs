@@ -14,6 +14,7 @@ namespace McgTgBotNet.Models
         public string Message { get; set; } = string.Empty;
         public DateTime DateOfShift { get; set; }
         public string UserName { get; set; } = string.Empty;
+        public int Time { get; set; }
         public long ChatId { get; set; }
         [ForeignKey(nameof(User))]
         public int UserId { get; set; }

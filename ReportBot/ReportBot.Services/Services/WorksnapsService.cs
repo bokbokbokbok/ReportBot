@@ -159,6 +159,19 @@ public class WorksnapsService : IWorksnapsService
         return data.Last();
     }
 
+    public async Task<List<TimeEntryDTO>> GetTimeEntryAsync(int userId, int projectId)
+    {
+        var startOfDay = DateTime.Today.Date;
+        var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+        var fromTimestamp = new DateTimeOffset(startOfDay, TimeZoneInfo.Local.GetUtcOffset(startOfDay)).ToUnixTimeSeconds();
+        var toTimestamp = new DateTimeOffset(endOfDay, TimeZoneInfo.Local.GetUtcOffset(endOfDay)).ToUnixTimeSeconds();
+
+        var data = await _worksnapsRepository.GetTimeEntriesAsync(null, projectId.ToString(), userId.ToString(), fromTimestamp, toTimestamp);
+
+        return data;
+    }
+
     private async Task<List<SummaryReportDTO>> IsSessionFinishedAsync(List<SummaryReportDTO> data)
     {
         var result = new List<SummaryReportDTO>();

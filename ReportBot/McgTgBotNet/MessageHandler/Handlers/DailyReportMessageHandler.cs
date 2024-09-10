@@ -45,7 +45,7 @@ namespace McgTgBotNet.MessageHandler.Handlers
             if (projectName == null)
                 throw new Exception("Sorry, but you have not entered a project");
 
-            DateTime date = DateTime.ParseExact(dateMessage, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            var date = DateTime.ParseExact(dateMessage, "dd/MM/yyyy", CultureInfo.InvariantCulture);
 
             _historyContainer.Clear();
 
@@ -55,7 +55,6 @@ namespace McgTgBotNet.MessageHandler.Handlers
                 DateOfShift = date,
                 Created = DateTime.Now,
                 Message = message.Text!,
-                UserName = message.From!.Username!,
                 ProjectName = projectName,
             };
 

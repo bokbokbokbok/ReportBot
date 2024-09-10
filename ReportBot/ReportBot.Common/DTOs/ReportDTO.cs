@@ -9,6 +9,7 @@ public class ReportDTO
     public DateTime Created { get; set; }
     public string Message { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
+    public int Time { get; set; }
     public DateTime DateOfShift { get; set; }
     public long ChatId { get; set; }
     public UserDTO User { get; set; } = null!;

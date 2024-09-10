@@ -14,5 +14,7 @@ namespace McgTgBotNet.DTOs
         public int ProjectId { get; set; }
         [XMLProperty("user_id")]
         public int UserId { get; set; }
+        [XMLProperty("duration_in_minutes")]
+        public int DurationInMinutes { get; set; }
     }
 }
