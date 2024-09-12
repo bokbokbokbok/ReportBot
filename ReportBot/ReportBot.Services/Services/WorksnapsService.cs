@@ -43,7 +43,18 @@ public class WorksnapsService : IWorksnapsService
             .Select(x => x.First())
             .ToList();
 
-        return await IsSessionFinishedAsync(distinctData);
+        var result = new List<SummaryReportDTO>();
+
+        foreach (var item in data)
+        {
+            var project = await _projectRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.ProjectId);
+
+            if (project == null || project.GroupId == null)
+                continue;
+            result.Add(item);
+        }
+
+        return await IsSessionFinishedAsync(result);
     }
 
     public async Task<List<SummaryReportDTO>> GetSummaryReportsAsync(DateTime from, DateTime to)
@@ -180,7 +191,7 @@ public class WorksnapsService : IWorksnapsService
         {
             var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
 
-            if (user == null)
+            if (user == null || user.Role == "manager")
                 continue;
 
             if (await GetTimeEntryAsync(item))

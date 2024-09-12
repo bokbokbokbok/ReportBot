@@ -33,7 +33,7 @@ namespace Hangfire.Jobs
                 var user = _userRepository.Include(x => x.Projects).FirstOrDefault(x => x.WorksnapsId == item.UserId)
                     ?? throw new Exception("User not found");
 
-                List<KeyboardButton[]> buttons = new List<KeyboardButton[]>();
+                var buttons = new List<KeyboardButton[]>();
 
                 var markup = new InlineKeyboardMarkup(
                     user.Projects.Select(project => new List<InlineKeyboardButton>() { InlineKeyboardButton.WithCallbackData(project.Name, $"#project-{project.Name}") }));
