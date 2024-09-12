@@ -45,12 +45,13 @@ public class WorksnapsService : IWorksnapsService
 
         var result = new List<SummaryReportDTO>();
 
-        foreach (var item in data)
+        foreach (var item in distinctData)
         {
             var project = await _projectRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.ProjectId);
 
             if (project == null || project.GroupId == null)
                 continue;
+
             result.Add(item);
         }
 
@@ -189,9 +190,15 @@ public class WorksnapsService : IWorksnapsService
 
         foreach (var item in data)
         {
-            var user = await _userRepository.FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
+            var user = await _userRepository.Include(x => x.Reports).FirstOrDefaultAsync(x => x.WorksnapsId == item.UserId);
+
 
             if (user == null || user.Role == "manager")
+                continue;
+
+            var lastReport = user.Reports.OrderByDescending(x => x.Created).FirstOrDefault();
+
+            if (lastReport == null || lastReport.Created.AddMinutes(20) >= DateTime.Now)
                 continue;
 
             if (await GetTimeEntryAsync(item))
@@ -206,7 +213,7 @@ public class WorksnapsService : IWorksnapsService
         var lastTimeEntry = await GetLastTimeEntryAsync(dto);
         var loggedTime = DateTimeOffset.FromUnixTimeSeconds(lastTimeEntry.LoggedTimestamp).UtcDateTime.ToLocalTime();
 
-        if (!(loggedTime.AddMinutes(20) > DateTime.Now)
+        if (!(loggedTime.AddMinutes(15) > DateTime.Now)
             && loggedTime.AddMinutes(10) >= DateTime.Now.AddMinutes(-10)
             && loggedTime.AddMinutes(10) <= DateTime.Now)
         {
