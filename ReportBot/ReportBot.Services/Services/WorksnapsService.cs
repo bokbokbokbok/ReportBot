@@ -206,7 +206,7 @@ public class WorksnapsService : IWorksnapsService
         var lastTimeEntry = await GetLastTimeEntryAsync(dto);
         var loggedTime = DateTimeOffset.FromUnixTimeSeconds(lastTimeEntry.LoggedTimestamp).UtcDateTime.ToLocalTime();
 
-        if (!(loggedTime.AddMinutes(10) > DateTime.Now)
+        if (!(loggedTime.AddMinutes(20) > DateTime.Now)
             && loggedTime.AddMinutes(10) >= DateTime.Now.AddMinutes(-10)
             && loggedTime.AddMinutes(10) <= DateTime.Now)
         {
